@@ -16,6 +16,7 @@ def main(global_config, **settings):
     config.add_route('banners_view', '/')
     config.add_route('add_banner_view', '/add_banner/')
     config.add_route('delete_banner_view', '/delete_banner/{id}/')
+    config.add_route('update_banner_view', '/update_banner/{id}/')
     config.add_static_view('static', 'server:static/')
     config.scan('.views')
     return config.make_wsgi_app()

@@ -44,6 +44,7 @@
           <th scope="col">Image path</th>
           <th scope="col">Url</th>
           <th scope="col">Status</th>
+          <th scope="col">Edit</th>
           <th scope="col">Del</th>
         </tr>
       </thead>
@@ -55,7 +56,8 @@
           <td>${banner.image_path}</td>
           <td>${banner.url}</td>
           <td>${statuses[banner.status][1]}</td>
-          <td><a href="${request.route_url('delete_banner', id=banner.id)}">Delete</a></td>
+          <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
+          <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
         </tr>
         % endfor
       </tbody>

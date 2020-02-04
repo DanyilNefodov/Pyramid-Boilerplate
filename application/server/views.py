@@ -54,8 +54,6 @@ class Views(object):
                 log.debug(400)
                 return dict(form=e.render())
             
-            log.debug(appstruct)
-
             new_title = appstruct.get("title", "default")
             new_url = appstruct.get("url", "default")
             new_status = int(appstruct.get("status", 0))
@@ -72,7 +70,6 @@ class Views(object):
                 title=new_title,
                 url=new_url,
                 status=new_status).order_by(desc(Banner.id)).first()
-
 
             img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
             img_scr = f"static/banner_img/{banner.id}{img_type}"
@@ -106,3 +103,48 @@ class Views(object):
 
         url = self.request.route_url('banners_view')
         return HTTPFound(url)
+
+    @view_config(route_name='update_banner_view', renderer='templates/add_banner_page.mako')
+    def update_banner_view(self):
+        bid = int(self.request.matchdict['id'])
+
+        banner = DBSession.query(Banner).filter_by(id=bid).first()
+        
+        form = self.banner_form.render({
+            "title": banner.title,
+            # "image": image,
+            "url": banner.url,
+            "status": banner.status
+        })
+
+        if 'submit' in self.request.params:
+            controls = self.request.POST.items()
+            
+            try:
+                appstruct = self.banner_form.validate(controls)
+
+            except deform.ValidationFailure as e:
+
+                log.debug(400)
+                return dict(form=e.render())
+            
+            new_title = appstruct.get("title", "default")
+            new_url = appstruct.get("url", "default")
+            new_status = int(appstruct.get("status", 0))
+
+            img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+            new_img_scr = f"static/banner_img/{banner.id}{img_type}"
+
+            DBSession.query(Banner).filter_by(id=bid).update({
+                "title": new_title,
+                "image_path": new_img_scr,
+                "url": new_url,
+                "status": new_status
+            })
+
+            log.debug(201)
+
+            url = self.request.route_url('banners_view')
+            return HTTPFound(url)
+
+        return dict(form=form)
