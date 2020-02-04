@@ -1,6 +1,7 @@
 import deform.widget
 import logging
 import mimetypes
+import os
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
@@ -33,10 +34,10 @@ class Views(object):
 
     @view_config(route_name='banners_view', renderer='templates/banners_page.mako')
     def banners_view(self):
-        banners = DBSession.query(Banner).order_by(desc(Banner.position))
+        banners = DBSession.query(Banner).order_by(Banner.position)
 
         log.debug(200)
-        return dict(banners=banners)
+        return dict(banners=banners, statuses=Banner.STATUSES)
 
     @view_config(route_name='add_banner_view', renderer='templates/add_banner_page.mako')
     def add_banner_view(self):
@@ -83,9 +84,25 @@ class Views(object):
             banner.position = banner.id
 
             log.debug(201)
-            url = self.request.route_url('banners_view')
 
+            url = self.request.route_url('banners_view')
             return HTTPFound(url)
 
         log.debug(200)
         return dict(form=form)
+    
+    @view_config(route_name='delete_banner_view')
+    def delete_banner_view(self):
+        bid = int(self.request.matchdict['id'])
+
+        banner = DBSession.query(Banner).filter_by(id=bid).first()
+
+        if os.path.exists(banner.image_path or ""):
+            os.remove(banner.image_path)
+
+        DBSession.delete(banner)
+
+        log.debug(201)
+
+        url = self.request.route_url('banners_view')
+        return HTTPFound(url)

@@ -44,6 +44,7 @@
           <th scope="col">Image path</th>
           <th scope="col">Url</th>
           <th scope="col">Status</th>
+          <th scope="col">Del</th>
         </tr>
       </thead>
       <tbody>
@@ -53,7 +54,8 @@
           <td>${banner.title}</td>
           <td>${banner.image_path}</td>
           <td>${banner.url}</td>
-          <td>${banner.status}</td>
+          <td>${statuses[banner.status][1]}</td>
+          <td><a href="${request.route_url('delete_banner', id=banner.id)}">Delete</a></td>
         </tr>
         % endfor
       </tbody>
