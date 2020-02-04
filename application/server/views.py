@@ -1,5 +1,6 @@
 import deform.widget
 import logging
+import mimetypes
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
@@ -10,7 +11,7 @@ from server.models import (
     User)
 from server.schemas import BannerSchema
 
-from sqlalchemy import desc
+from sqlalchemy import desc, update
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +24,8 @@ class Views(object):
     @property
     def banner_form(self):
         schema = BannerSchema()
-        return deform.Form(schema, buttons=('submit',))
+        registry = deform.widget.ResourceRegistry(self.request)
+        return deform.Form(schema, buttons=('submit',), resource_registry=registry)
 
     @property
     def reqts(self):
@@ -35,14 +37,14 @@ class Views(object):
 
         log.debug(200)
         return dict(banners=banners)
-    HTTPFound
+
     @view_config(route_name='add_banner_view', renderer='templates/add_banner_page.mako')
     def add_banner_view(self):
         form = self.banner_form.render()
 
         if 'submit' in self.request.params:
             controls = self.request.POST.items()
-
+            
             try:
                 appstruct = self.banner_form.validate(controls)
 
@@ -50,22 +52,40 @@ class Views(object):
 
                 log.debug(400)
                 return dict(form=e.render())
+            
+            log.debug(appstruct)
 
-            # Add a new page to the database
-        
-            # new_title = appstruct['title']
-            # new_body = appstruct['body']
-            # DBSession.add(Page(title=new_title, body=new_body))
+            new_title = appstruct.get("title", "default")
+            new_url = appstruct.get("url", "default")
+            new_status = int(appstruct.get("status", 0))
 
-            # # Get the new ID and redirect
-            # page = DBSession.query(Page).filter_by(title=new_title).one()
-            # new_uid = page.uid
+            new_banner = Banner(
+                title=new_title,
+                url=new_url,
+                status=new_status
+            )
 
-            print(appstruct)
+            DBSession.add(new_banner)
 
-            url = self.request.route_url('banners_view')
+            banner = DBSession.query(Banner).filter_by(
+                title=new_title,
+                url=new_url,
+                status=new_status).order_by(desc(Banner.id)).first()
+
+
+            img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+            img_scr = f"static/banner_img/{banner.id}{img_type}"
+
+            with open(f"server/{img_scr}", 'wb') as f:
+                f.write(appstruct.get("image").get("fp").read())
+
+            banner.image_path = img_scr
+            banner.position = banner.id
 
             log.debug(201)
+            url = self.request.route_url('banners_view')
+
             return HTTPFound(url)
 
         log.debug(200)
+        return dict(form=form)

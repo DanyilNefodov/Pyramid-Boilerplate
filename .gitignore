@@ -125,3 +125,11 @@ server.egg-info/
 # VS code
 .vscode
 
+# Images
+
+application/server/static/banner_img/*
+
+# SQL
+
+sql.sqlite
+

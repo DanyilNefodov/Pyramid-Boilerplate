@@ -36,5 +36,28 @@
         </div>
       </div>
     </div>
+    <table class="table">
+      <thead class="thead-dark">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Title</th>
+          <th scope="col">Image path</th>
+          <th scope="col">Url</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        % for banner in banners:
+          <tr>
+          <th scope="row">${banner.position}</th>
+          <td>${banner.title}</td>
+          <td>${banner.image_path}</td>
+          <td>${banner.url}</td>
+          <td>${banner.status}</td>
+        </tr>
+        % endfor
+      </tbody>
+    </table>
+  </main>
 </body>
 </html>
