@@ -14,7 +14,7 @@ def main(global_config, **settings):
     Base.metadata.bind = engine
 
     config = Configurator(settings=settings,
-                          root_factory='server.models.Root')
+                          root_factory='server.resources.Root')
     
     config.include('pyramid_mako')
     config.include('pyramid_tm')

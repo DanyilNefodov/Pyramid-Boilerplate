@@ -1,5 +1,3 @@
-from pyramid.security import Allow, Everyone
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -63,11 +61,3 @@ class Banner(Base):
     url = Column(Text)
     status = Column(SmallInteger, default=STATUS_1)
     position = Column(Integer, unique=True)
-
-
-class Root(object):
-    __acl__ = [(Allow, Everyone, 'view'),
-               (Allow, "group:admin", 'edit')]
-
-    def __init__(self, request):
-        pass

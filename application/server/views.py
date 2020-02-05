@@ -51,7 +51,7 @@ class Views(object):
         log.debug(200)
         return dict(banners=banners, statuses=Banner.STATUSES)
 
-    @view_config(route_name='add_banner_view', renderer='templates/add_banner_page.mako')
+    @view_config(route_name='add_banner_view', renderer='templates/add_banner_page.mako', permission='admin')
     def add_banner_view(self):
         form = self.banner_form.render()
 
@@ -105,7 +105,7 @@ class Views(object):
         bid = int(self.request.matchdict['id'])
 
         banner = DBSession.query(Banner).filter_by(id=bid).first()
-
+        
         if os.path.exists(banner.image_path or ""):
             os.remove(banner.image_path)
 
@@ -116,7 +116,7 @@ class Views(object):
         url = self.request.route_url('banners_view')
         return HTTPFound(url)
 
-    @view_config(route_name='update_banner_view', renderer='templates/add_banner_page.mako')
+    @view_config(route_name='update_banner_view', renderer='templates/add_banner_page.mako', permission='admin')
     def update_banner_view(self):
         bid = int(self.request.matchdict['id'])
 
