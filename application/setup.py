@@ -5,6 +5,7 @@ from setuptools import setup
 requires = [
     'bcrypt',
     'deform',
+    'Pillow',
     'pyramid',
     'pyramid_mako',
     'pyramid_tm',

@@ -17,6 +17,7 @@ from server.models import (
     User,
     UserInGroup)
 from server.schemas import BannerSchema, LoginSchema
+from server.utils import crop_image
 
 from sqlalchemy import desc, update
 
@@ -86,8 +87,7 @@ class Views(object):
             img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
             img_scr = f"static/banner_img/{banner.id}{img_type}"
 
-            with open(f"server/{img_scr}", 'wb') as f:
-                f.write(appstruct.get("image").get("fp").read())
+            crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
 
             banner.image_path = img_scr
             banner.position = banner.id
@@ -106,8 +106,8 @@ class Views(object):
 
         banner = DBSession.query(Banner).filter_by(id=bid).first()
         
-        if os.path.exists(banner.image_path or ""):
-            os.remove(banner.image_path)
+        if os.path.exists(f"server/{banner.image_path}" or ""):
+            os.remove(f"server/{banner.image_path}" )
 
         DBSession.delete(banner)
 
@@ -145,11 +145,13 @@ class Views(object):
             new_status = int(appstruct.get("status", 0))
 
             img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
-            new_img_scr = f"static/banner_img/{banner.id}{img_type}"
+            img_scr = f"static/banner_img/{banner.id}{img_type}"
+
+            crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
 
             DBSession.query(Banner).filter_by(id=bid).update({
                 "title": new_title,
-                "image_path": new_img_scr,
+                "image_path": img_scr,
                 "url": new_url,
                 "status": new_status
             })

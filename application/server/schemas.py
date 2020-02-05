@@ -11,7 +11,9 @@ from server.models import (
     User
 )
 from server.password_utils import check_password
+from server.utils import get_size
 import validators
+
 
 
 class MemoryTmpStore(dict):
@@ -27,11 +29,21 @@ def url_validator(node, value: str):
                     f"URL {value} is not valid")
 
 
+def image_validator(node, value: str):
+    width, height = get_size(value.get("fp").read())
+
+    if width < 600 or height < 600:
+        raise Invalid(node,
+                    f"Image must be at least 600x600px")
+    
+
+
 class BannerSchema(colander.MappingSchema):
     title = colander.SchemaNode(colander.String())
     image = colander.SchemaNode(
             deform.FileData(),
-            widget=deform.widget.FileUploadWidget(tmpstore)
+            widget=deform.widget.FileUploadWidget(tmpstore), 
+            validator=image_validator
             )
     url = colander.SchemaNode(colander.String(), validator=url_validator)
     status = colander.SchemaNode(
