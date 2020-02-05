@@ -50,8 +50,6 @@ def main(argv=sys.argv):
         )
         DBSession.add(user)
 
-        
-
         new_group_id = int(DBSession.query(Group).filter_by(name=group.name).first().id)
         new_user_id = int(DBSession.query(User).filter_by(name=user.name).first().id)
 

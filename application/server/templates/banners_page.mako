@@ -49,6 +49,8 @@
           <th scope="col">Image path</th>
           <th scope="col">Url</th>
           <th scope="col">Status</th>
+          <th scope="col">Inc</th>
+          <th scope="col">Dec</th>
           <th scope="col">Edit</th>
           <th scope="col">Del</th>
         </tr>
@@ -61,6 +63,8 @@
           <td>${banner.image_path}</td>
           <td>${banner.url}</td>
           <td>${statuses[banner.status][1]}</td>
+          <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
+          <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
           <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
           <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
         </tr>

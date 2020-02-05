@@ -191,7 +191,7 @@ class Views(object):
             log.debug(201)
             return HTTPFound(location=came_from,
                              headers=headers)
-        
+
         log.debug(200)
         return dict(form=form)
 
@@ -205,3 +205,66 @@ class Views(object):
         return HTTPFound(location=url,
                          headers=headers)
     
+    @view_config(route_name='increase_banner_position_view', permission='admin')
+    def increase_banner_position_view(self):
+        bid = int(self.request.matchdict['id'])
+        cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
+
+        banners = DBSession.query(Banner).order_by(Banner.position).all()
+
+        bindex = banners.index(cursor_banner)
+
+        if bindex != 0:
+            cursor_id = banners[bindex].id
+            prev_id = banners[bindex-1].id
+
+            cursor_position = banners[bindex].position
+            prev_position = banners[bindex-1].position
+            
+            DBSession.query(Banner).filter_by(id=prev_id).update({
+                "position": -1
+            })
+
+            DBSession.query(Banner).filter_by(id=cursor_id).update({
+                "position": prev_position
+            })
+            
+            DBSession.query(Banner).filter_by(id=prev_id).update({
+                "position": cursor_position
+            })
+
+        log.debug(201)
+        url = self.request.route_url('banners_view')
+        return HTTPFound(url)
+    
+    @view_config(route_name='decrease_banner_position_view', permission='admin')
+    def decrease_banner_position_view(self):
+        bid = int(self.request.matchdict['id'])
+        cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
+
+        banners = DBSession.query(Banner).order_by(Banner.position).all()
+
+        bindex = banners.index(cursor_banner)
+
+        if bindex + 1 != len(banners):
+            cursor_id = banners[bindex].id
+            next_id = banners[bindex+1].id
+
+            cursor_position = banners[bindex].position
+            next_position = banners[bindex+1].position
+            
+            DBSession.query(Banner).filter_by(id=next_id).update({
+                "position": -1
+            })
+
+            DBSession.query(Banner).filter_by(id=cursor_id).update({
+                "position": next_position
+            })
+            
+            DBSession.query(Banner).filter_by(id=next_id).update({
+                "position": cursor_position
+            })
+
+        log.debug(201)
+        url = self.request.route_url('banners_view')
+        return HTTPFound(url)
