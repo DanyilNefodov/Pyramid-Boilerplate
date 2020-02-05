@@ -19,6 +19,7 @@ from sqlalchemy_imageattach.entity import Image, image_attachment
 
 from zope.sqlalchemy import register
 
+
 DBSession = scoped_session(sessionmaker())
 register(DBSession)
 Base = declarative_base()
@@ -30,6 +31,20 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     password = Column(Text)
+
+
+class Group(Base):
+    __tablename__ = 'group'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, unique=True)
+
+
+class UserInGroup(Base):
+    __tablename__ = 'useringroup'
+
+    user_id = Column(Integer, ForeignKey('user.id'), primary_key=True)
+    group_id = Column(Integer, ForeignKey('group.id'), primary_key=True)
 
 
 class Banner(Base):
@@ -52,7 +67,7 @@ class Banner(Base):
 
 class Root(object):
     __acl__ = [(Allow, Everyone, 'view'),
-               (Allow, Everyone, 'edit')]
+               (Allow, "group:admin", 'edit')]
 
     def __init__(self, request):
         pass

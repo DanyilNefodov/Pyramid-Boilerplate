@@ -9,12 +9,15 @@ from pyramid.paster import (
     setup_logging,
     )
 
-from .models import (
+from server.models import (
     DBSession,
     Base,
+    Group,
     User,
+    UserInGroup,
     Banner,
     )
+from server.password_utils import hash_password
 
 
 def usage(argv):
@@ -36,6 +39,24 @@ def main(argv=sys.argv):
     with transaction.manager:
         # Create default models
 
-        user = User(name='Test', password='1234')
+        group = Group(
+            name="group:admin"
+        )
+        DBSession.add(group)
 
+        user = User(
+            name='Test', 
+            password=hash_password('1234')
+        )
         DBSession.add(user)
+
+        
+
+        new_group_id = int(DBSession.query(Group).filter_by(name=group.name).first().id)
+        new_user_id = int(DBSession.query(User).filter_by(name=user.name).first().id)
+
+        user_in_group = UserInGroup(
+            user_id=new_user_id,
+            group_id=new_group_id
+        )
+        DBSession.add(user_in_group)
