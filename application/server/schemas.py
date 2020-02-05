@@ -5,8 +5,12 @@ import deform
 import deform.widget
 from deform import Form, ValidationFailure
 
-from server.models import Banner
-
+from server.models import (
+    Banner,
+    DBSession,
+    User
+)
+from server.password_utils import check_password
 import validators
 
 
@@ -35,3 +39,27 @@ class BannerSchema(colander.MappingSchema):
             widget=deform.widget.SelectWidget(
                              values=Banner.STATUSES)
             )
+
+
+def name_validator(node, value: str):
+    user = DBSession.query(User).filter_by(name=value).first()
+    print(node, flush=True)
+
+    if not user:
+        raise Invalid(node,
+                    f"User with name {value} does not exist")
+
+
+class LoginSchema(colander.MappingSchema):
+    name = colander.SchemaNode(colander.String(), validator=name_validator)
+    password = colander.SchemaNode(colander.String())
+
+    def validator(self, node, cstruct):
+        name = cstruct['name']
+        password = cstruct['password']
+
+        user = DBSession.query(User).filter_by(name=name).first()
+
+        if not check_password(password, user.password):
+            raise Invalid(node,
+                    f"Password is not correct")

@@ -29,7 +29,12 @@
       <div class="container">  <link href="" rel="stylesheet">
           <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
             <div id="filters" class="filters">
-              <a href="${request.route_url('add_banner_view')}" data-filter="*" class="active">Add new banner</a>
+              <a href="${request.route_url('add_banner_view')}" data-filter="*">Add new banner</a>
+              % if view.request.environ.get("HTTP_COOKIE") is None:
+              <a href="${request.application_url}/login">Log In</a>
+              % else:
+              <a href="${request.application_url}/logout">Logout</a>
+              % endif
             </div>
           </div>
         </div>
