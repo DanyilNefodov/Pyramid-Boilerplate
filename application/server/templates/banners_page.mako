@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>MyPortfolio</title>
+  <title>Banners</title>
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <meta content="" name="keywords">
   <meta content="" name="description">
@@ -16,6 +16,9 @@
   <link href="https://fonts.googleapis.com/css?family=Inconsolata:400,700|Raleway:400,700&display=swap"
     rel="stylesheet">
 
+  <!-- Flexslider CSS -->
+	<link rel="stylesheet" href="${request.static_url('server:static/css/flexslider.css')}" type="text/css" media="screen" />
+
   <!-- Bootstrap CSS File -->
   <link rel="stylesheet" href="${request.static_url('server:static/vendor/bootstrap/css/bootstrap.min.css')}"/>
 
@@ -25,7 +28,7 @@
 
 <body>
   <main id="main">
-    <div class="site-section site-portfolio">
+    <div class="site-section">
       <div class="container">  <link href="" rel="stylesheet">
           <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
             <div id="filters" class="filters">
@@ -41,36 +44,53 @@
         </div>
       </div>
     </div>
-    <table class="table">
-      <thead class="thead-dark">
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">Title</th>
-          <th scope="col">Image path</th>
-          <th scope="col">Url</th>
-          <th scope="col">Status</th>
-          <th scope="col">Inc</th>
-          <th scope="col">Dec</th>
-          <th scope="col">Edit</th>
-          <th scope="col">Del</th>
-        </tr>
-      </thead>
-      <tbody>
-        % for banner in banners:
-          <tr>
-          <th scope="row">${banner.position}</th>
-          <td>${banner.title}</td>
-          <td>${banner.image_path}</td>
-          <td>${banner.url}</td>
-          <td>${statuses[banner.status][1]}</td>
-          <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
-          <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
-          <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
-          <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
-        </tr>
-        % endfor
-      </tbody>
-    </table>
+    <div class="container container-table">
+      <div class="row vertical-center-row">
+        <div class="col-lg-6 text-lg-right" data-aos="fade-up" data-aos-delay="100">
+          <div class="slider">
+            <div class="flexslider">
+              <ul class="slides">
+                % for banner in banners:
+                  <li>
+                    <a href="${banner.url}">
+                      <img src="${banner.image_path}" />
+                    </a>
+                    <tr>
+                    <td>${banner.title}</td>
+                    <td></td>
+                    <td>${statuses[banner.status][1]}</td>
+                    <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
+                    <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
+                    <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
+                    <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
+                  </li>
+                % endfor
+              </ul>
+            </div>
+        </div>
+        </div>
+      </div>
+    </div>
   </main>
+
+  <!-- jQuery -->
+  <script src="${request.static_url('server:static/js/jquery.min.js')}"></script>
+
+  <!-- FlexSlider -->
+  <script defer src="${request.static_url('server:static/js/jquery.flexslider.js')}"></script>
+
+  <script type="text/javascript">
+    $(function(){
+      SyntaxHighlighter.all();
+    });
+    $(window).load(function(){
+      $('.flexslider').flexslider({
+        animation: "slide",
+        start: function(slider){
+          $('body').removeClass('loading');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
