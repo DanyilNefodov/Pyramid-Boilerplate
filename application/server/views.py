@@ -1,7 +1,10 @@
 import deform.widget
+import io
 import logging
 import mimetypes
 import os
+
+from mako.template import Template
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import (
@@ -20,6 +23,8 @@ from server.schemas import BannerSchema, LoginSchema
 from server.utils import crop_image
 
 from sqlalchemy import desc, update
+
+from shutil import copyfile
 
 
 log = logging.getLogger(__name__)
@@ -84,10 +89,18 @@ class Views(object):
                 url=new_url,
                 status=new_status).order_by(desc(Banner.id)).first()
 
-            img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
-            img_scr = f"static/banner_img/{banner.id}{img_type}"
+            print("\n\n\n", appstruct.get("image") is None, appstruct.get("image") , "\n\n\n")
 
-            crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
+            if appstruct.get("image") is None:
+                img_scr = f"static/banner_img/{banner.id}.jpg"
+
+                copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
+
+            else:
+                img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+                img_scr = f"static/banner_img/{banner.id}{img_type}"
+
+                crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
 
             banner.image_path = img_scr
             banner.position = banner.id
@@ -121,7 +134,7 @@ class Views(object):
         bid = int(self.request.matchdict['id'])
 
         banner = DBSession.query(Banner).filter_by(id=bid).first()
-        
+
         form = self.banner_form.render({
             "title": banner.title,
             # "image": image,
@@ -144,10 +157,20 @@ class Views(object):
             new_url = appstruct.get("url", "default")
             new_status = int(appstruct.get("status", 0))
 
-            img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
-            img_scr = f"static/banner_img/{banner.id}{img_type}"
+            print("\n\n\n", appstruct.get("image") is None, not banner.image_path, "\n\n\n")
 
-            crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
+            if appstruct.get("image") is None and not banner.image_path:
+                img_scr = f"static/banner_img/{banner.id}.jpg"
+
+                copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
+
+            elif appstruct.get("image") is not None:
+                img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+                img_scr = f"static/banner_img/{banner.id}{img_type}"
+
+                crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
+            else:
+                img_scr = banner.image_path
 
             DBSession.query(Banner).filter_by(id=bid).update({
                 "title": new_title,

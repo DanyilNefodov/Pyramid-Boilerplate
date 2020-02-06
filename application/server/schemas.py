@@ -43,7 +43,8 @@ class BannerSchema(colander.MappingSchema):
     image = colander.SchemaNode(
             deform.FileData(),
             widget=deform.widget.FileUploadWidget(tmpstore), 
-            validator=image_validator
+            validator=image_validator,
+            missing=None
             )
     url = colander.SchemaNode(colander.String(), validator=url_validator)
     status = colander.SchemaNode(
