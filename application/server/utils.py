@@ -1,3 +1,4 @@
+import PIL
 from PIL import Image 
 from io import BytesIO
 
@@ -17,4 +18,7 @@ def crop_image(image: bytes, path_to_save: str):
 
 
 def get_size(image: bytes):
-    return Image.open(BytesIO(image)).size
+    try:
+        return Image.open(BytesIO(image)).size
+    except PIL.UnidentifiedImageError:
+        return (0,0)

@@ -142,6 +142,11 @@ class Views(object):
             "status": banner.status
         })
 
+        image_path = f"server:{banner.image_path}"
+
+        form = form.replace('<label for="deformField2"\n         class="control-label "\n         id="req-deformField2"\n         >\n    Image\n  </label>',
+        f'<label for="deformField2"\n         class="control-label "\n         id="req-deformField2"\n         >\n    Image\n  </label>\n<br><img src="{self.request.static_url(image_path)}" alt="" draggable="false" width=200 height=200/><br>\n')
+
         if 'submit' in self.request.params:
             controls = self.request.POST.items()
             
