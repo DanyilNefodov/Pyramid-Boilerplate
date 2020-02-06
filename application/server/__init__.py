@@ -15,7 +15,7 @@ def main(global_config, **settings):
 
     config = Configurator(settings=settings,
                           root_factory='server.resources.Root')
-    
+
     config.include('pyramid_mako')
     config.include('pyramid_tm')
 
@@ -27,15 +27,15 @@ def main(global_config, **settings):
     config.set_authorization_policy(authz_policy)
 
     config.add_route('banners_view', '/')
-    config.add_route('add_banner_view', '/add_banner')
-    config.add_route('delete_banner_view', '/delete_banner/{id}')
-    config.add_route('update_banner_view', '/update_banner/{id}')
+    config.add_route('add_banner_view', '/banner/new')
+    config.add_route('delete_banner_view', '/banner/{id}/delete')
+    config.add_route('update_banner_view', '/banner/{id}/update')
     config.add_route('login_view', '/login')
     config.add_route('logout_view', '/logout')
     config.add_route('increase_banner_position_view',
-                     '/increase_banner_position/{id}')
+                     '/banner/{id}/position/increase')
     config.add_route('decrease_banner_position_view',
-                     '/decrease_banner_position/{id}')
+                     '/banner/{id}/position/decrease')
     config.add_static_view('static', 'server:static/')
 
     config.scan('.views')
