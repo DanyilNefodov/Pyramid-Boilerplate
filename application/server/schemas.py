@@ -15,10 +15,10 @@ from server.utils import get_size
 import validators
 
 
-
 class MemoryTmpStore(dict):
     def preview_url(self, uid):
         return None
+
 
 tmpstore = MemoryTmpStore()
 
@@ -26,7 +26,7 @@ tmpstore = MemoryTmpStore()
 def url_validator(node, value: str):
     if not validators.url(value):
         raise Invalid(node,
-                    f"URL {value} is not valid")
+                      f"URL {value} is not valid")
 
 
 def image_validator(node, value: str):
@@ -34,18 +34,18 @@ def image_validator(node, value: str):
 
     if width < 600 or height < 600:
         raise Invalid(node,
-                    f"Image must be at least 600x600px")
-    
+                      f"Image must be at least 600x600px")
 
 
 class BannerSchema(colander.MappingSchema):
     title = colander.SchemaNode(colander.String())
     image = colander.SchemaNode(
             deform.FileData(),
-            widget=deform.widget.FileUploadWidget(tmpstore), 
+            widget=deform.widget.FileUploadWidget(tmpstore),
             validator=image_validator,
             missing=None
             )
+
     url = colander.SchemaNode(colander.String(), validator=url_validator)
     status = colander.SchemaNode(
             colander.String(),
@@ -60,7 +60,7 @@ def name_validator(node, value: str):
 
     if not user:
         raise Invalid(node,
-                    f"User with name {value} does not exist")
+                      f"User with name {value} does not exist")
 
 
 class LoginSchema(colander.MappingSchema):
@@ -75,4 +75,4 @@ class LoginSchema(colander.MappingSchema):
 
         if not check_password(password, user.password):
             raise Invalid(node,
-                    f"Password is not correct")
+                          f"Password is not correct")

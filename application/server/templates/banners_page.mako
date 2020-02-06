@@ -29,7 +29,7 @@
 <body>
   <main id="main">
     <div class="site-section">
-      <div class="container">  <link href="" rel="stylesheet">
+      <div class="container">
           <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
             <div id="filters" class="filters">
               <a href="${request.route_url('add_banner_view')}" data-filter="*">Add new banner</a>

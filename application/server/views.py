@@ -15,7 +15,7 @@ from pyramid.view import view_config
 
 from server.models import (
     Banner,
-    DBSession, 
+    DBSession,
     Group,
     User,
     UserInGroup)
@@ -38,32 +38,39 @@ class Views(object):
     def banner_form(self):
         schema = BannerSchema()
         registry = deform.widget.ResourceRegistry(self.request)
-        return deform.Form(schema, buttons=('submit',), resource_registry=registry)
+        return deform.Form(schema,
+                           buttons=('submit',),
+                           resource_registry=registry)
 
     @property
     def login_form(self):
         schema = LoginSchema()
         registry = deform.widget.ResourceRegistry(self.request)
-        return deform.Form(schema, buttons=('submit',), resource_registry=registry)
+        return deform.Form(schema,
+                           buttons=('submit',),
+                           resource_registry=registry)
 
     @property
     def reqts(self):
         return self.banner_form.get_widget_resources()
 
-    @view_config(route_name='banners_view', renderer='templates/banners_page.mako')
+    @view_config(route_name='banners_view',
+                 renderer='templates/banners_page.mako')
     def banners_view(self):
         banners = DBSession.query(Banner).order_by(Banner.position)
 
         log.debug(200)
         return dict(banners=banners, statuses=Banner.STATUSES)
 
-    @view_config(route_name='add_banner_view', renderer='templates/add_banner_page.mako', permission='admin')
+    @view_config(route_name='add_banner_view',
+                 renderer='templates/add_banner_page.mako',
+                 permission='admin')
     def add_banner_view(self):
         form = self.banner_form.render()
 
         if 'submit' in self.request.params:
             controls = self.request.POST.items()
-            
+
             try:
                 appstruct = self.banner_form.validate(controls)
 
@@ -71,7 +78,7 @@ class Views(object):
 
                 log.debug(400)
                 return dict(form=e.render())
-            
+
             new_title = appstruct.get("title", "default")
             new_url = appstruct.get("url", "default")
             new_status = int(appstruct.get("status", 0))
@@ -112,15 +119,15 @@ class Views(object):
 
         log.debug(200)
         return dict(form=form)
-    
+
     @view_config(route_name='delete_banner_view')
     def delete_banner_view(self):
         bid = int(self.request.matchdict['id'])
 
         banner = DBSession.query(Banner).filter_by(id=bid).first()
-        
+
         if os.path.exists(f"server/{banner.image_path}" or ""):
-            os.remove(f"server/{banner.image_path}" )
+            os.remove(f"server/{banner.image_path}")
 
         DBSession.delete(banner)
 
@@ -129,7 +136,9 @@ class Views(object):
         url = self.request.route_url('banners_view')
         return HTTPFound(url)
 
-    @view_config(route_name='update_banner_view', renderer='templates/add_banner_page.mako', permission='admin')
+    @view_config(route_name='update_banner_view',
+                 renderer='templates/add_banner_page.mako',
+                 permission='admin')
     def update_banner_view(self):
         bid = int(self.request.matchdict['id'])
 
@@ -144,12 +153,18 @@ class Views(object):
 
         image_path = f"server:{banner.image_path}"
 
-        form = form.replace('<label for="deformField2"\n         class="control-label "\n         id="req-deformField2"\n         >\n    Image\n  </label>',
-        f'<label for="deformField2"\n         class="control-label "\n         id="req-deformField2"\n         >\n    Image\n  </label>\n<br><img src="{self.request.static_url(image_path)}" alt="" draggable="false" width=200 height=200/><br>\n')
+        form = form.replace('<label for="deformField2"\n         \
+            class=\"control-label "\n         id="req-deformField2"\n         \
+                > \\n    Image\n  </label>',
+                            f'<label for="deformField2"\n         \
+            class="control-label "\n         id="req-deformField2"\n         >\
+                \n    Image\n  </label>\n<br><img src=\"\
+                {self.request.static_url(image_path)}\" alt=\"\" \
+                    draggable="false" width=200 height=200/><br>\n')
 
         if 'submit' in self.request.params:
             controls = self.request.POST.items()
-            
+
             try:
                 appstruct = self.banner_form.validate(controls)
 
@@ -157,12 +172,10 @@ class Views(object):
 
                 log.debug(400)
                 return dict(form=e.render())
-            
+
             new_title = appstruct.get("title", "default")
             new_url = appstruct.get("url", "default")
             new_status = int(appstruct.get("status", 0))
-
-            print("\n\n\n", appstruct.get("image") is None, not banner.image_path, "\n\n\n")
 
             if appstruct.get("image") is None and not banner.image_path:
                 img_scr = f"static/banner_img/{banner.id}.jpg"
@@ -170,7 +183,9 @@ class Views(object):
                 copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
 
             elif appstruct.get("image") is not None:
-                img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+                img_type = mimetypes.guess_extension(
+                    appstruct.get("image").get("mimetype"))
+
                 img_scr = f"static/banner_img/{banner.id}{img_type}"
 
                 crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
@@ -197,7 +212,7 @@ class Views(object):
 
         if 'submit' in self.request.params:
             controls = self.request.POST.items()
-            
+
             try:
                 appstruct = self.login_form.validate(controls)
 
@@ -234,8 +249,9 @@ class Views(object):
         log.debug(201)
         return HTTPFound(location=url,
                          headers=headers)
-    
-    @view_config(route_name='increase_banner_position_view', permission='admin')
+
+    @view_config(route_name='increase_banner_position_view',
+                 permission='admin')
     def increase_banner_position_view(self):
         bid = int(self.request.matchdict['id'])
         cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
@@ -250,7 +266,7 @@ class Views(object):
 
             cursor_position = banners[bindex].position
             prev_position = banners[bindex-1].position
-            
+
             DBSession.query(Banner).filter_by(id=prev_id).update({
                 "position": -1
             })
@@ -258,7 +274,7 @@ class Views(object):
             DBSession.query(Banner).filter_by(id=cursor_id).update({
                 "position": prev_position
             })
-            
+
             DBSession.query(Banner).filter_by(id=prev_id).update({
                 "position": cursor_position
             })
@@ -266,8 +282,9 @@ class Views(object):
         log.debug(201)
         url = self.request.route_url('banners_view')
         return HTTPFound(url)
-    
-    @view_config(route_name='decrease_banner_position_view', permission='admin')
+
+    @view_config(route_name='decrease_banner_position_view',
+                 permission='admin')
     def decrease_banner_position_view(self):
         bid = int(self.request.matchdict['id'])
         cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
@@ -282,7 +299,7 @@ class Views(object):
 
             cursor_position = banners[bindex].position
             next_position = banners[bindex+1].position
-            
+
             DBSession.query(Banner).filter_by(id=next_id).update({
                 "position": -1
             })
@@ -290,7 +307,7 @@ class Views(object):
             DBSession.query(Banner).filter_by(id=cursor_id).update({
                 "position": next_position
             })
-            
+
             DBSession.query(Banner).filter_by(id=next_id).update({
                 "position": cursor_position
             })

@@ -8,12 +8,9 @@ from sqlalchemy import (
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import (
-    relationship,
     scoped_session,
     sessionmaker,
     )
-
-from sqlalchemy_imageattach.entity import Image, image_attachment
 
 from zope.sqlalchemy import register
 
@@ -47,7 +44,7 @@ class UserInGroup(Base):
 
 class Banner(Base):
     __tablename__ = 'banner'
-    
+
     STATUS_1, STATUS_2, STATUS_3 = range(3)
     STATUSES = (
         (0, "Status 1"),
