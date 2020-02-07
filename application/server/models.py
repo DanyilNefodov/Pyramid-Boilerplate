@@ -1,5 +1,8 @@
+import datetime
+
 from sqlalchemy import (
     Column,
+    DateTime,
     Integer,
     ForeignKey,
     Text,
@@ -58,3 +61,5 @@ class Banner(Base):
     url = Column(Text)
     status = Column(SmallInteger, default=STATUS_1)
     position = Column(Integer, unique=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow)

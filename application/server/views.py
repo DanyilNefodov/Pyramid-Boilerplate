@@ -1,3 +1,4 @@
+import datetime
 import deform.widget
 import io
 import logging
@@ -96,18 +97,18 @@ class Views(object):
                 url=new_url,
                 status=new_status).order_by(desc(Banner.id)).first()
 
-            print("\n\n\n", appstruct.get("image") is None, appstruct.get("image") , "\n\n\n")
-
             if appstruct.get("image") is None:
                 img_scr = f"static/banner_img/{banner.id}.jpg"
 
                 copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
 
             else:
-                img_type = mimetypes.guess_extension(appstruct.get("image").get("mimetype"))
+                img_type = mimetypes.guess_extension(
+                    appstruct.get("image").get("mimetype"))
                 img_scr = f"static/banner_img/{banner.id}{img_type}"
 
-                crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
+                crop_image(appstruct.get("image").get("fp"),
+                           f"server/{img_scr}")
 
             banner.image_path = img_scr
             banner.position = banner.id
@@ -188,7 +189,9 @@ class Views(object):
 
                 img_scr = f"static/banner_img/{banner.id}{img_type}"
 
-                crop_image(appstruct.get("image").get("fp"), f"server/{img_scr}")
+                crop_image(appstruct.get("image").get("fp"),
+                           f"server/{img_scr}")
+
             else:
                 img_scr = banner.image_path
 
@@ -198,6 +201,8 @@ class Views(object):
                 "url": new_url,
                 "status": new_status
             })
+
+            banner.updated_at = datetime.datetime.utcnow()
 
             log.debug(201)
 
@@ -279,6 +284,9 @@ class Views(object):
                 "position": cursor_position
             })
 
+            banners[bindex].updated_at = datetime.datetime.utcnow()
+            banners[bindex-1].updated_at = datetime.datetime.utcnow()
+
         log.debug(201)
         url = self.request.route_url('banners_view')
         return HTTPFound(url)
@@ -311,6 +319,9 @@ class Views(object):
             DBSession.query(Banner).filter_by(id=next_id).update({
                 "position": cursor_position
             })
+
+            banners[bindex].updated_at = datetime.datetime.utcnow()
+            banners[bindex-1].updated_at = datetime.datetime.utcnow()
 
         log.debug(201)
         url = self.request.route_url('banners_view')

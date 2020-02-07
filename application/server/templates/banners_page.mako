@@ -57,7 +57,8 @@
                     </a>
                     <tr>
                     <td>${banner.title}</td>
-                    <td></td>
+                    <td>${banner.created_at}</td>
+                    <td>${banner.updated_at}</td>
                     <td>${statuses[banner.status][1]}</td>
                     <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
                     <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
