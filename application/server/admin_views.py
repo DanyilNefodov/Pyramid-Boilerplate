@@ -1,14 +1,18 @@
 import deform.widget
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPInternalServerError
 from pyramid.security import (
     remember,
     forget,
     )
 from pyramid.view import view_config
 
-from server.schemas import LoginSchema
 from server.banner_views import log
+from server.schemas import LoginSchema
+from server.models import (
+    Banner,
+    DBSession
+)
 
 
 class Views(object):
@@ -66,3 +70,15 @@ class Views(object):
 
         return HTTPFound(location=url,
                          headers=headers)
+
+    @view_config(route_name='admin_view',
+                 renderer='templates/admin_page.mako')
+    def admin_view(self):
+        try:
+            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(Banner.position, Banner.id).limit(15)
+
+        except Exception as e:
+            log.debug(e)
+            raise HTTPInternalServerError()
+
+        return dict(banners=banners)

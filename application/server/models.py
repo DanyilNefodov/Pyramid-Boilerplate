@@ -1,5 +1,7 @@
 import datetime
 
+from pyramid.httpexceptions import HTTPInternalServerError
+
 from sqlalchemy import (
     Column,
     DateTime,
@@ -29,6 +31,15 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     name = Column(Text, unique=True)
     password = Column(Text)
+
+    def groups(self):
+        try:
+            return list(DBSession.query(Group.name).filter(Group.id.in_(
+                DBSession.query(UserInGroup.group_id).filter(
+                    UserInGroup.user_id == self.id))).first())
+
+        except Exception:
+            raise HTTPInternalServerError
 
 
 class Group(Base):

@@ -1,16 +1,19 @@
+from pyramid.httpexceptions import HTTPInternalServerError, HTTPNotFound
+
 from server.models import (
     DBSession,
-    Group,
     User,
-    UserInGroup,
     )
 
 
 def groupfinder(name: str, request):
-    user = DBSession.query(User).filter(User.name == name).first()
+    try:
+        user = DBSession.query(User).filter(User.name == name).first()
 
-    groups_names = DBSession.query(Group.name).filter(Group.id.in_(
-        DBSession.query(UserInGroup.group_id).filter(
-            UserInGroup.user_id == user.id))).first()
+        if user is None:
+            raise HTTPNotFound
 
-    return list(groups_names)
+        return user.groups()
+
+    except Exception:
+        raise HTTPInternalServerError

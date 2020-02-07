@@ -9,7 +9,8 @@ from pyramid.view import view_config
 
 from server.models import (
     Banner,
-    DBSession)
+    DBSession,
+    User)
 from server.schemas import BannerSchema
 from server.utils import crop_image
 
@@ -39,11 +40,14 @@ class Views(object):
         try:
             banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(Banner.position, Banner.id).limit(15)
 
+            user = DBSession.query(User).filter(
+                User.name == self.request.authenticated_userid).first()
+
         except Exception as e:
             log.debug(e)
             raise HTTPInternalServerError()
 
-        return dict(banners=banners)
+        return dict(banners=banners, user=user)
 
     @view_config(route_name='add_banner_view',
                  renderer='templates/banner_edit.mako',
@@ -121,6 +125,7 @@ class Views(object):
 
         except Exception as e:
             log.debug(e)
+            raise HTTPInternalServerError
 
         url = self.request.route_url('banners_view')
         return HTTPFound(url)

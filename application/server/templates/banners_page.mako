@@ -33,11 +33,14 @@
           <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
             <div id="filters" class="filters">
               <a href="${request.route_url('add_banner_view')}" data-filter="*">Add new banner</a>
-              % if view.request.environ.get("HTTP_COOKIE") is None:
-              <a href="${request.application_url}/login">Log In</a>
+              % if user:
+              <a href="${request.route_url('login_view')}">Log In</a>
               % else:
-              <a href="${request.application_url}/logout">Logout</a>
+              <a href="${request.route_url('logout_view')}">Logout</a>
               % endif
+              % if user and "group:admin" in user.groups():
+              <a href="${request.route_url('admin_view')}">Admin</a>
+              % endif   
             </div>
           </div>
         </div>
@@ -55,15 +58,6 @@
                     <a href="${banner.url}">
                       <img src="${banner.image_path}" />
                     </a>
-                    <tr>
-                    <td>${banner.title}</td>
-                    <td>${banner.created_at}</td>
-                    <td>${banner.updated_at}</td>
-                    <td>${banner.visible}</td>
-                    <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
-                    <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
-                    <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
-                    <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
                   </li>
                 % endfor
               </ul>
