@@ -1,11 +1,8 @@
 import datetime
 import deform.widget
-import io
 import logging
 import mimetypes
 import os
-
-from mako.template import Template
 
 from pyramid.httpexceptions import HTTPFound
 from pyramid.security import (
@@ -16,14 +13,9 @@ from pyramid.view import view_config
 
 from server.models import (
     Banner,
-    DBSession,
-    Group,
-    User,
-    UserInGroup)
+    DBSession)
 from server.schemas import BannerSchema, LoginSchema
 from server.utils import crop_image
-
-from sqlalchemy import desc, update
 
 from shutil import copyfile
 
@@ -92,10 +84,10 @@ class Views(object):
 
             DBSession.add(new_banner)
 
-            banner = DBSession.query(Banner).filter_by(
-                title=new_title,
-                url=new_url,
-                visible=new_visible).order_by(desc(Banner.id)).first()
+            banner = DBSession.query(Banner).filter(
+                Banner.title=new_title,
+                Banner.url=new_url,
+                Banner.visible=new_visible).order_by(Banner.id.desc()).first()
 
             if appstruct.get("image") is None:
                 img_scr = f"static/banner_img/{banner.id}.jpg"
@@ -125,7 +117,7 @@ class Views(object):
     def delete_banner_view(self):
         bid = int(self.request.matchdict['id'])
 
-        banner = DBSession.query(Banner).filter_by(id=bid).first()
+        banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
         if os.path.exists(f"server/{banner.image_path}" or ""):
             os.remove(f"server/{banner.image_path}")
@@ -143,7 +135,7 @@ class Views(object):
     def update_banner_view(self):
         bid = int(self.request.matchdict['id'])
 
-        banner = DBSession.query(Banner).filter_by(id=bid).first()
+        banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
         form = self.banner_form.render({
             "title": banner.title,
@@ -195,7 +187,7 @@ class Views(object):
             else:
                 img_scr = banner.image_path
 
-            DBSession.query(Banner).filter_by(id=bid).update({
+            DBSession.query(Banner).filter(Banner.id == bid).update({
                 "title": new_title,
                 "image_path": img_scr,
                 "url": new_url,
@@ -259,7 +251,7 @@ class Views(object):
                  permission='admin')
     def increase_banner_position_view(self):
         bid = int(self.request.matchdict['id'])
-        cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
+        cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
         banners = DBSession.query(Banner).order_by(Banner.position).all()
 
@@ -267,25 +259,25 @@ class Views(object):
 
         if bindex != 0:
             cursor_id = banners[bindex].id
-            prev_id = banners[bindex-1].id
+            prev_id = banners[bindex - 1].id
 
             cursor_position = banners[bindex].position
-            prev_position = banners[bindex-1].position
+            prev_position = banners[bindex - 1].position
 
-            DBSession.query(Banner).filter_by(id=prev_id).update({
+            DBSession.query(Banner).filter(Banner.id == prev_id).update({
                 "position": -1
             })
 
-            DBSession.query(Banner).filter_by(id=cursor_id).update({
+            DBSession.query(Banner).filter(Banner.id == cursor_id).update({
                 "position": prev_position
             })
 
-            DBSession.query(Banner).filter_by(id=prev_id).update({
+            DBSession.query(Banner).filter(Banner.id == prev_id).update({
                 "position": cursor_position
             })
 
             banners[bindex].updated_at = datetime.datetime.utcnow()
-            banners[bindex-1].updated_at = datetime.datetime.utcnow()
+            banners[bindex - 1].updated_at = datetime.datetime.utcnow()
 
         log.debug(201)
         url = self.request.route_url('banners_view')
@@ -295,7 +287,7 @@ class Views(object):
                  permission='admin')
     def decrease_banner_position_view(self):
         bid = int(self.request.matchdict['id'])
-        cursor_banner = DBSession.query(Banner).filter_by(id=bid).first()
+        cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
         banners = DBSession.query(Banner).order_by(Banner.position).all()
 
@@ -303,25 +295,25 @@ class Views(object):
 
         if bindex + 1 != len(banners):
             cursor_id = banners[bindex].id
-            next_id = banners[bindex+1].id
+            next_id = banners[bindex + 1].id
 
             cursor_position = banners[bindex].position
-            next_position = banners[bindex+1].position
+            next_position = banners[bindex + 1].position
 
-            DBSession.query(Banner).filter_by(id=next_id).update({
+            DBSession.query(Banner).filter(Banner.id == next_id).update({
                 "position": -1
             })
 
-            DBSession.query(Banner).filter_by(id=cursor_id).update({
+            DBSession.query(Banner).filter(Banner.id == cursor_id).update({
                 "position": next_position
             })
 
-            DBSession.query(Banner).filter_by(id=next_id).update({
+            DBSession.query(Banner).filter(Banner.id == next_id).update({
                 "position": cursor_position
             })
 
             banners[bindex].updated_at = datetime.datetime.utcnow()
-            banners[bindex-1].updated_at = datetime.datetime.utcnow()
+            banners[bindex - 1].updated_at = datetime.datetime.utcnow()
 
         log.debug(201)
         url = self.request.route_url('banners_view')

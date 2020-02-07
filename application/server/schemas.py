@@ -3,10 +3,8 @@ from colander import Invalid
 
 import deform
 import deform.widget
-from deform import Form, ValidationFailure
 
 from server.models import (
-    Banner,
     DBSession,
     User
 )
@@ -55,7 +53,7 @@ class BannerSchema(colander.MappingSchema):
 
 
 def name_validator(node, value: str):
-    user = DBSession.query(User).filter_by(name=value).first()
+    user = DBSession.query(User).filter(User.name == value).first()
     print(node, flush=True)
 
     if not user:
@@ -71,7 +69,7 @@ class LoginSchema(colander.MappingSchema):
         name = cstruct['name']
         password = cstruct['password']
 
-        user = DBSession.query(User).filter_by(name=name).first()
+        user = DBSession.query(User).filter(User.name == name).first()
 
         if not check_password(password, user.password):
             raise Invalid(node,

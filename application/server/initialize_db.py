@@ -49,11 +49,11 @@ def main(argv=sys.argv):
         )
         DBSession.add(user)
 
-        new_group_id = int(DBSession.query(Group).filter_by(
-            name=group.name).first().id)
+        new_group_id = int(DBSession.query(
+            Group).filter(Group.name == group.name).first().id)
 
-        new_user_id = int(DBSession.query(User).filter_by(
-            name=user.name).first().id)
+        new_user_id = int(DBSession.query(User).filter(
+            User.name == user.name).first().id)
 
         user_in_group = UserInGroup(
             user_id=new_user_id,
