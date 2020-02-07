@@ -50,7 +50,7 @@ class Views(object):
     @view_config(route_name='banners_view',
                  renderer='templates/banners_page.mako')
     def banners_view(self):
-        banners = DBSession.query(Banner).order_by(Banner.position)
+        banners = DBSession.query(Banner).order_by(Banner.position, Banner.id)
 
         log.debug(200)
         return dict(banners=banners)
@@ -250,7 +250,7 @@ class Views(object):
         bid = int(self.request.matchdict['id'])
         cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
-        banners = DBSession.query(Banner).order_by(Banner.position).all()
+        banners = DBSession.query(Banner).order_by(Banner.position, Banner.id).all()
 
         bindex = banners.index(cursor_banner)
 
@@ -273,7 +273,7 @@ class Views(object):
         bid = int(self.request.matchdict['id'])
         cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()
 
-        banners = DBSession.query(Banner).order_by(Banner.position).all()
+        banners = DBSession.query(Banner).order_by(Banner.position, Banner.id).all()
 
         bindex = banners.index(cursor_banner)
 
