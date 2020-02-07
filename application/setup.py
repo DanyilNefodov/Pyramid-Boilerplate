@@ -6,6 +6,7 @@ requires = [
     'bcrypt',
     'deform',
     'Pillow',
+    'psycopg2-binary',
     'pyramid',
     'pyramid_mako',
     'pyramid_tm',
