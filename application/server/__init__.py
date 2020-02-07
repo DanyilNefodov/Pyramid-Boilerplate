@@ -4,6 +4,8 @@ from pyramid.config import Configurator
 
 from sqlalchemy import engine_from_config
 
+from server.admin_routes import admin_include
+from server.banner_routes import banner_include
 from server.models import DBSession, Base
 from server.security import groupfinder
 
@@ -26,17 +28,8 @@ def main(global_config, **settings):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
-    config.add_route('banners_view', '/')
-    config.add_route('add_banner_view', '/banner/new')
-    config.add_route('delete_banner_view', '/banner/{id}/delete')
-    config.add_route('update_banner_view', '/banner/{id}/update')
-    config.add_route('login_view', '/login')
-    config.add_route('logout_view', '/logout')
-    config.add_route('increase_banner_position_view',
-                     '/banner/{id}/position/increase')
-    config.add_route('decrease_banner_position_view',
-                     '/banner/{id}/position/decrease')
-    config.add_static_view('static', 'server:static/')
+    config.include(admin_include, route_prefix='/')
+    config.include(banner_include, route_prefix='/')
 
-    config.scan('.views')
+    config.add_static_view('static', 'server:static/')
     return config.make_wsgi_app()

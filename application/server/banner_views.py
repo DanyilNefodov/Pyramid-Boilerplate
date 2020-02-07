@@ -5,16 +5,12 @@ import mimetypes
 import os
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
-from pyramid.security import (
-    remember,
-    forget,
-    )
 from pyramid.view import view_config
 
 from server.models import (
     Banner,
     DBSession)
-from server.schemas import BannerSchema, LoginSchema
+from server.schemas import BannerSchema
 from server.utils import crop_image
 
 
@@ -28,14 +24,6 @@ class Views(object):
     @property
     def banner_form(self):
         schema = BannerSchema()
-        registry = deform.widget.ResourceRegistry(self.request)
-        return deform.Form(schema,
-                           buttons=('submit',),
-                           resource_registry=registry)
-
-    @property
-    def login_form(self):
-        schema = LoginSchema()
         registry = deform.widget.ResourceRegistry(self.request)
         return deform.Form(schema,
                            buttons=('submit',),
@@ -222,46 +210,6 @@ class Views(object):
             return HTTPFound(url)
 
         return dict(form=form)
-
-    @view_config(route_name='login_view', renderer='templates/login_page.mako')
-    def login_view(self):
-        form = self.login_form.render()
-
-        if 'submit' in self.request.params:
-            controls = self.request.POST.items()
-
-            try:
-                appstruct = self.login_form.validate(controls)
-
-            except deform.ValidationFailure as e:
-                return dict(form=e.render())
-
-            request = self.request
-
-            login_url = request.route_url('login_view')
-            referrer = request.url
-            if referrer == login_url:
-                referrer = '/'
-
-            came_from = request.params.get('came_from', referrer)
-
-            name = appstruct.get("name")
-            headers = remember(request, name)
-
-            return HTTPFound(location=came_from,
-                             headers=headers)
-
-        log.debug(200)
-        return dict(form=form)
-
-    @view_config(route_name='logout_view')
-    def logout_view(self):
-        request = self.request
-        headers = forget(request)
-        url = request.route_url('banners_view')
-
-        return HTTPFound(location=url,
-                         headers=headers)
 
     @view_config(route_name='increase_banner_position_view',
                  permission='admin')
