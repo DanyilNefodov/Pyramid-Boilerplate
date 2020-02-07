@@ -90,9 +90,7 @@ class Views(object):
                 Banner.visible=new_visible).order_by(Banner.id.desc()).first()
 
             if appstruct.get("image") is None:
-                img_scr = f"static/banner_img/{banner.id}.jpg"
-
-                copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
+                img_scr = ""
 
             else:
                 img_type = mimetypes.guess_extension(
@@ -171,9 +169,7 @@ class Views(object):
             new_visible = appstruct.get("visible", True)
 
             if appstruct.get("image") is None and not banner.image_path:
-                img_scr = f"static/banner_img/{banner.id}.jpg"
-
-                copyfile(f"server/static/img/default.jpg", f"server/{img_scr}")
+                img_scr = ""
 
             elif appstruct.get("image") is not None:
                 img_type = mimetypes.guess_extension(
