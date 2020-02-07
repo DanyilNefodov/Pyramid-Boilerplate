@@ -4,10 +4,15 @@ from colander import Invalid
 import deform
 import deform.widget
 
+from pyramid.httpexceptions import (
+    HTTPNotFound,
+    HTTPInternalServerError
+    )
+
 from server.models import (
     DBSession,
     User
-)
+    )
 from server.password_utils import check_password
 from server.utils import get_size
 import validators
@@ -53,8 +58,14 @@ class BannerSchema(colander.MappingSchema):
 
 
 def name_validator(node, value: str):
-    user = DBSession.query(User).filter(User.name == value).first()
-    print(node, flush=True)
+    try:
+        user = DBSession.query(User).filter(User.name == value).first()
+
+        if user is None:
+            raise HTTPNotFound()
+
+    except Exception:
+        raise HTTPInternalServerError()
 
     if not user:
         raise Invalid(node,
@@ -69,7 +80,14 @@ class LoginSchema(colander.MappingSchema):
         name = cstruct['name']
         password = cstruct['password']
 
-        user = DBSession.query(User).filter(User.name == name).first()
+        try:
+            user = DBSession.query(User).filter(User.name == name).first()
+
+            if user is None:
+                raise HTTPNotFound()
+
+        except Exception:
+            raise HTTPInternalServerError()
 
         if not check_password(password, user.password):
             raise Invalid(node,
