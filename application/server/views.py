@@ -187,13 +187,10 @@ class Views(object):
             else:
                 img_scr = banner.image_path
 
-            DBSession.query(Banner).filter(Banner.id == bid).update({
-                "title": new_title,
-                "image_path": img_scr,
-                "url": new_url,
-                "visible": new_visible
-            })
-
+            banner.title = new_title
+            banner.image_path = img_scr
+            banner.url = new_url
+            banner.visible = new_visible
             banner.updated_at = datetime.datetime.utcnow()
 
             log.debug(201)
@@ -258,25 +255,12 @@ class Views(object):
         bindex = banners.index(cursor_banner)
 
         if bindex != 0:
-            cursor_id = banners[bindex].id
-            prev_id = banners[bindex - 1].id
-
             cursor_position = banners[bindex].position
-            prev_position = banners[bindex - 1].position
 
-            DBSession.query(Banner).filter(Banner.id == prev_id).update({
-                "position": -1
-            })
-
-            DBSession.query(Banner).filter(Banner.id == cursor_id).update({
-                "position": prev_position
-            })
-
-            DBSession.query(Banner).filter(Banner.id == prev_id).update({
-                "position": cursor_position
-            })
-
+            banners[bindex].position = banners[bindex - 1].position
             banners[bindex].updated_at = datetime.datetime.utcnow()
+
+            banners[bindex - 1].position = cursor_position
             banners[bindex - 1].updated_at = datetime.datetime.utcnow()
 
         log.debug(201)
@@ -294,26 +278,13 @@ class Views(object):
         bindex = banners.index(cursor_banner)
 
         if bindex + 1 != len(banners):
-            cursor_id = banners[bindex].id
-            next_id = banners[bindex + 1].id
-
             cursor_position = banners[bindex].position
-            next_position = banners[bindex + 1].position
 
-            DBSession.query(Banner).filter(Banner.id == next_id).update({
-                "position": -1
-            })
-
-            DBSession.query(Banner).filter(Banner.id == cursor_id).update({
-                "position": next_position
-            })
-
-            DBSession.query(Banner).filter(Banner.id == next_id).update({
-                "position": cursor_position
-            })
-
+            banners[bindex].position = banners[bindex + 1].position
             banners[bindex].updated_at = datetime.datetime.utcnow()
-            banners[bindex - 1].updated_at = datetime.datetime.utcnow()
+
+            banners[bindex + 1].position = cursor_position
+            banners[bindex + 1].updated_at = datetime.datetime.utcnow()
 
         log.debug(201)
         url = self.request.route_url('banners_view')
