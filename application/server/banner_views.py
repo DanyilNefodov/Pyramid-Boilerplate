@@ -46,7 +46,7 @@ class Views(object):
         return dict(banners=banners)
 
     @view_config(route_name='add_banner_view',
-                 renderer='templates/add_banner_page.mako',
+                 renderer='templates/banner_edit.mako',
                  permission='admin')
     def add_banner_view(self):
         form = self.banner_form.render()
@@ -126,7 +126,7 @@ class Views(object):
         return HTTPFound(url)
 
     @view_config(route_name='update_banner_view',
-                 renderer='templates/add_banner_page.mako',
+                 renderer='templates/banner_edit.mako',
                  permission='admin')
     def update_banner_view(self):
         bid = int(self.request.matchdict['id'])
