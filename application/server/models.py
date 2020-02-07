@@ -6,7 +6,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Text,
-    SmallInteger,
+    Boolean,
     )
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -48,18 +48,11 @@ class UserInGroup(Base):
 class Banner(Base):
     __tablename__ = 'banner'
 
-    STATUS_1, STATUS_2, STATUS_3 = range(3)
-    STATUSES = (
-        (0, "Status 1"),
-        (1, "Status 2"),
-        (2, "Status 3"),
-    )
-
     id = Column(Integer, primary_key=True)
-    title = Column(Text)
-    image_path = Column(Text, unique=True)
-    url = Column(Text)
-    status = Column(SmallInteger, default=STATUS_1)
-    position = Column(Integer, unique=True)
+    title = Column(Text, nullable=False)
+    image_path = Column(Text, unique=True, nullable=True)
+    url = Column(Text, nullable=False)
+    visible = Column(Boolean, default=True)
+    position = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)

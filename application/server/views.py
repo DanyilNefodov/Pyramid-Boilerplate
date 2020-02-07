@@ -61,7 +61,7 @@ class Views(object):
         banners = DBSession.query(Banner).order_by(Banner.position)
 
         log.debug(200)
-        return dict(banners=banners, statuses=Banner.STATUSES)
+        return dict(banners=banners)
 
     @view_config(route_name='add_banner_view',
                  renderer='templates/add_banner_page.mako',
@@ -82,12 +82,12 @@ class Views(object):
 
             new_title = appstruct.get("title", "default")
             new_url = appstruct.get("url", "default")
-            new_status = int(appstruct.get("status", 0))
+            new_visible = appstruct.get("visible", True)
 
             new_banner = Banner(
                 title=new_title,
                 url=new_url,
-                status=new_status
+                visible=new_visible
             )
 
             DBSession.add(new_banner)
@@ -95,7 +95,7 @@ class Views(object):
             banner = DBSession.query(Banner).filter_by(
                 title=new_title,
                 url=new_url,
-                status=new_status).order_by(desc(Banner.id)).first()
+                visible=new_visible).order_by(desc(Banner.id)).first()
 
             if appstruct.get("image") is None:
                 img_scr = f"static/banner_img/{banner.id}.jpg"
@@ -149,7 +149,7 @@ class Views(object):
             "title": banner.title,
             # "image": image,
             "url": banner.url,
-            "status": banner.status
+            "visible": banner.visible
         })
 
         image_path = f"server:{banner.image_path}"
@@ -176,7 +176,7 @@ class Views(object):
 
             new_title = appstruct.get("title", "default")
             new_url = appstruct.get("url", "default")
-            new_status = int(appstruct.get("status", 0))
+            new_visible = appstruct.get("visible", True)
 
             if appstruct.get("image") is None and not banner.image_path:
                 img_scr = f"static/banner_img/{banner.id}.jpg"
@@ -199,7 +199,7 @@ class Views(object):
                 "title": new_title,
                 "image_path": img_scr,
                 "url": new_url,
-                "status": new_status
+                "visible": new_visible
             })
 
             banner.updated_at = datetime.datetime.utcnow()

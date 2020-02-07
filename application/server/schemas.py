@@ -47,10 +47,10 @@ class BannerSchema(colander.MappingSchema):
             )
 
     url = colander.SchemaNode(colander.String(), validator=url_validator)
-    status = colander.SchemaNode(
-            colander.String(),
-            widget=deform.widget.SelectWidget(
-                             values=Banner.STATUSES)
+    visible = colander.SchemaNode(
+            colander.Boolean(),
+            widget=deform.widget.CheckboxWidget(),
+            default=True
             )
 
 

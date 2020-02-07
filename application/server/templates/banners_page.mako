@@ -59,7 +59,7 @@
                     <td>${banner.title}</td>
                     <td>${banner.created_at}</td>
                     <td>${banner.updated_at}</td>
-                    <td>${statuses[banner.status][1]}</td>
+                    <td>${banner.visible}</td>
                     <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
                     <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
                     <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
