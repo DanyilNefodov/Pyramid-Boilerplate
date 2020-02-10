@@ -2,14 +2,16 @@ from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
 from pyramid.csrf import LegacySessionCSRFStoragePolicy
-from pyramid.session import UnencryptedCookieSessionFactoryConfig
+from pyramid.session import SignedCookieSessionFactory
 
 from sqlalchemy import engine_from_config
 
 from server.admin_routes import admin_include
 from server.banner_routes import banner_include
 from server.models import DBSession, Base
-from server.security import groupfinder
+from server.security import (
+    groupfinder,
+    JSONSerializerWithPickleFallback)
 
 
 def main(global_config, **settings):
@@ -17,11 +19,13 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
-    my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
+    serializer = JSONSerializerWithPickleFallback()
+    session_factory = SignedCookieSessionFactory("qweqweqwe", serializer=serializer)
 
     config = Configurator(settings=settings,
-                          session_factory=my_session_factory,
                           root_factory='server.resources.Root')
+
+    config.set_session_factory(session_factory)
 
     config.include('pyramid_mako')
     config.include('pyramid_tm')

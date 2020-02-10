@@ -18,7 +18,9 @@ from server.schemas import (
 from server.models import (
     Banner,
     DBSession)
-from server.utils import crop_image
+from server.utils import (
+    crop_image,
+    filter_banners_by_search)
 
 
 class Views(object):
@@ -50,7 +52,14 @@ class Views(object):
         form = self.banner_search_form.render()
 
         try:
-            banners = DBSession.query(Banner).order_by(Banner.position, Banner.id)
+            search_request = self.request.session["search_request"]
+        except KeyError:
+            search_request = self.request.session["search_request"] = {}
+
+        form = self.banner_search_form.render(search_request)
+
+        try:
+            banners = filter_banners_by_search(search_request)
 
             if 'search' in self.request.params:
                 controls = self.request.POST.items()
@@ -62,21 +71,15 @@ class Views(object):
                     search_url = appstruct.get("url", "default")
                     search_visible = appstruct.get("visible", 0)
 
-                    banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
-
-                    if search_visible != 0:
-                        if search_visible == 1:
-                            visible = True
-                        if search_visible == 2:
-                            visible = False
-
-                        banners = banners.filter(Banner.visible == visible)
-
-                    form = self.banner_search_form.render({
+                    search_request = self.request.session["search_request"] = {
                         "title": search_title,
                         "url": search_url,
                         "visible": search_visible
-                    })
+                    }
+
+                    form = self.banner_search_form.render(search_request)
+
+                    banners = filter_banners_by_search(search_request)
 
                 except deform.ValidationFailure as e:
                     form = e.render()
@@ -102,12 +105,16 @@ class Views(object):
         if page is None:
             raise HTTPNotFound
 
-        form = self.banner_search_form.render()
+        try:
+            search_request = self.request.session["search_request"]
+        except KeyError:
+            search_request = self.request.session["search_request"] = {}
 
-        banners = DBSession.query(Banner).order_by(
-            Banner.position, Banner.id)
+        form = self.banner_search_form.render(search_request)
 
         try:
+            banners = filter_banners_by_search(search_request)
+
             if 'search' in self.request.params:
                 controls = self.request.POST.items()
 
@@ -118,21 +125,15 @@ class Views(object):
                     search_url = appstruct.get("url", "default")
                     search_visible = appstruct.get("visible", 0)
 
-                    banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
-
-                    if search_visible != 0:
-                        if search_visible == 1:
-                            visible = True
-                        if search_visible == 2:
-                            visible = False
-
-                        banners = banners.filter(Banner.visible == visible)
-
-                    form = self.banner_search_form.render({
+                    search_request = self.request.session["search_request"] = {
                         "title": search_title,
                         "url": search_url,
                         "visible": search_visible
-                    })
+                    }
+
+                    form = self.banner_search_form.render(search_request)
+
+                    banners = filter_banners_by_search(search_request)
 
                 except deform.ValidationFailure as e:
                     form = e.render()
