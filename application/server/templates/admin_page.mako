@@ -10,6 +10,11 @@
             <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
                 <div id="filters" class="filters">
                     <a>
+                        <form id="csrf_input" method="post" action="${request.route_url('banners_view')}">
+                            <input type="submit" value="Home Page">
+                        </form>
+                    </a>
+                    <a>
                         <form id="csrf_input" method="post" action="${request.route_url('add_banner_view')}">
                             <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
                             <input type="submit" value="Add New Banner">
