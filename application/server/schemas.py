@@ -31,6 +31,33 @@ search_visible_choices = ((0, "- Select -"),
             (2, "False"))
 
 
+@colander.deferred
+def deferred_csrf_default(node, kw):
+    request = kw.get('request')
+    csrf_token = request.session.get_csrf_token()
+    return csrf_token
+
+
+@colander.deferred
+def deferred_csrf_validator(node, kw):
+    def validate_csrf(node, value):
+        request = kw.get('request')
+        csrf_token = request.session.get_csrf_token()
+        if value != csrf_token:
+            raise ValueError('Bad CSRF token')
+    return validate_csrf
+
+
+class CSRFSchema(colander.Schema):
+    csrf = colander.SchemaNode(
+        colander.String(),
+        default=deferred_csrf_default,
+        missing=deferred_csrf_default,
+        validator=deferred_csrf_validator,
+        widget=deform.widget.HiddenWidget(),
+        )
+
+
 def url_validator(node, value: str):
     if not validators.url(value):
         raise Invalid(node,
@@ -45,7 +72,7 @@ def image_validator(node, value: str):
                       f"Image must be at least 600x600px")
 
 
-class BannerSchema(colander.MappingSchema):
+class BannerSchema(CSRFSchema):
     title = colander.SchemaNode(colander.String())
     image = colander.SchemaNode(
             deform.FileData(),
@@ -62,7 +89,7 @@ class BannerSchema(colander.MappingSchema):
             )
 
 
-class BannerSearchSchema(colander.MappingSchema):
+class BannerSearchSchema(CSRFSchema):
     title = colander.SchemaNode(colander.String(),
                                 required=False,
                                 missing="")
