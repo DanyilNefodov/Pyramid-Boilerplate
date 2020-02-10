@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 import transaction
@@ -9,8 +10,9 @@ from pyramid.paster import (
     setup_logging)
 
 from server.models import (
-    DBSession,
+    Banner,
     Base,
+    DBSession,
     Group,
     User,
     UserInGroup)
@@ -58,3 +60,18 @@ def main(argv=sys.argv):
             group_id=new_group_id
         )
         DBSession.add(user_in_group)
+
+        # for bid in range(101):
+        #     banner_id = bid + 1
+
+        #     banner = Banner(
+        #         id=banner_id,
+        #         title=f"Title {banner_id}",
+        #         image_path=f"static/banner_img/{banner_id}.jpe",
+        #         url="https://projects.ronis.info/today",
+        #         visible=True,
+        #         position=banner_id,
+        #         created_at=datetime.datetime.utcnow(),
+        #         updated_at=datetime.datetime.utcnow()
+        #     )
+        #     DBSession.add(banner)

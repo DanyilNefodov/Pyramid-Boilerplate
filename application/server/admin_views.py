@@ -22,6 +22,7 @@ from server.utils import crop_image
 class Views(object):
     def __init__(self, request):
         self.request = request
+        self.PAGINATION_LIMIT = 15
 
     @property
     def banner_form(self):
@@ -36,21 +37,52 @@ class Views(object):
                  renderer='templates/admin_page.mako')
     def admin_view(self):
         try:
-            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(Banner.position, Banner.id).limit(15)
+            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(Banner.position, Banner.id)
+
+            banners_count = banners.count()
+
+            count = banners_count // self.PAGINATION_LIMIT
+
+            if banners_count % self.PAGINATION_LIMIT != 0:
+                count += 1
 
         except Exception as e:
             log.debug(e)
             raise HTTPInternalServerError()
 
-        return dict(banners=banners)
+        return dict(banners=banners.limit(self.PAGINATION_LIMIT), page=dict(count=count, page=1))
+
+    @view_config(route_name='admin_paginated_view',
+                 renderer='templates/admin_page.mako')
+    def admin_paginated_view(self):
+        page = int(self.request.matchdict['id'])
+
+        if page is None:
+            raise HTTPNotFound
+
+        try:
+            pagination_offset = self.PAGINATION_LIMIT * (page - 1)
+
+            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(
+                Banner.position, Banner.id)
+
+            banners_count = banners.count()
+
+            count = banners_count // self.PAGINATION_LIMIT
+
+            if banners_count % self.PAGINATION_LIMIT != 0:
+                count += 1
+
+        except Exception as e:
+            log.debug(e)
+            raise HTTPInternalServerError()
+
+        return dict(banners=banners.offset(pagination_offset).limit(self.PAGINATION_LIMIT), page=dict(count=count, page=page))
 
     @view_config(route_name='add_banner_view',
                  renderer='templates/banner_edit.mako',
                  permission='admin')
     def add_banner_view(self):
-        if not check_csrf_token(self.request):
-            raise HTTPBadRequest
-
         form = self.banner_form.render()
 
         if 'submit' in self.request.params:
@@ -90,8 +122,7 @@ class Views(object):
                         appstruct.get("image").get("mimetype"))
                     img_scr = f"static/banner_img/{banner.id}{img_type}"
 
-                    crop_image(appstruct.get("image").get("fp"),
-                            f"server/{img_scr}")
+                    crop_image(appstruct.get("image").get("fp"), banner.id, img_type)
 
                 banner.image_path = img_scr
                 banner.position = banner.id
@@ -112,6 +143,9 @@ class Views(object):
             raise HTTPBadRequest
 
         bid = int(self.request.matchdict['id'])
+
+        if bid is None:
+            raise HTTPNotFound
 
         try:
             banner = DBSession.query(Banner).filter(Banner.id == bid).first()
@@ -135,10 +169,10 @@ class Views(object):
                  renderer='templates/banner_edit.mako',
                  permission='admin')
     def update_banner_view(self):
-        if not check_csrf_token(self.request):
-            raise HTTPBadRequest
-
         bid = int(self.request.matchdict['id'])
+
+        if bid is None:
+            raise HTTPNotFound
 
         try:
             banner = DBSession.query(Banner).filter(Banner.id == bid).first()
@@ -198,8 +232,7 @@ class Views(object):
 
                 img_scr = f"static/banner_img/{banner.id}{img_type}"
 
-                crop_image(appstruct.get("image").get("fp"),
-                           f"server/{img_scr}")
+                crop_image(appstruct.get("image").get("fp"), banner.id, img_type)
 
             else:
                 img_scr = banner.image_path
@@ -227,6 +260,9 @@ class Views(object):
             raise HTTPBadRequest
 
         bid = int(self.request.matchdict['id'])
+
+        if bid is None:
+            raise HTTPNotFound
 
         try:
             cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()
@@ -272,6 +308,9 @@ class Views(object):
             raise HTTPBadRequest
 
         bid = int(self.request.matchdict['id'])
+
+        if bid is None:
+            raise HTTPNotFound
 
         try:
             cursor_banner = DBSession.query(Banner).filter(Banner.id == bid).first()

@@ -12,7 +12,7 @@
                     <a>
                         <form id="csrf_input" method="post" action="${request.route_url('add_banner_view')}">
                             <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-                            <input type="submit" value="Inc">
+                            <input type="submit" value="Add New Banner">
                         </form>
                     </a>
 
@@ -28,8 +28,6 @@
                         % endif
                     </a>
                 </div>
-            </div>
-            </div>
             </div>
         </div>
     </div>
@@ -68,25 +66,51 @@
                     <td>
                         <form id="csrf_input" method="post" action="${request.route_url('decrease_banner_position_view', id=banner.id)}">
                             <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-                            <input type="submit" value="Inc">
+                            <input type="submit" value="Dec">
                         </form>
                     </td>
                     <td>
                         <form id="csrf_input" method="post" action="${request.route_url('update_banner_view', id=banner.id)}">
                             <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-                            <input type="submit" value="Inc">
+                            <input type="submit" value="Upd">
                         </form>
                     </td>
                     <td>
                         <form id="csrf_input" method="post" action="${request.route_url('delete_banner_view', id=banner.id)}">
                             <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
-                            <input type="submit" value="Inc">
+                            <input type="submit" value="Del">
                         </form>
                     </td>
                 </tr>
             % endfor
         </tbody>
     </table>
+    % if page.get("count", 0) not in (0, 1):
+    <div class="container">  <link href="" rel="stylesheet">
+        <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
+            <% page_count = page.get("count", 0) %>
+            <div id="filters" class="filters">
+                <a>
+                    <form method="post" action="${request.route_url('admin_view')}">
+                        <input type="submit" value="1">
+                    </form>
+                </a>
+                % for paginator in range(2, page_count):
+                    <a>
+                        <form method="post" action="${request.route_url('admin_paginated_view', id=paginator)}">
+                            <input type="submit" value="${paginator}">
+                        </form>
+                    </a>
+                % endfor
+                <a>
+                    <form method="post" action="${request.route_url('admin_paginated_view', id=page_count)}">
+                        <input type="submit" value="${page_count}">
+                    </form>
+                </a>
+            </div>
+        </div>
+    </div>
+    % endif
 </%block>
 
 <%block name="js">

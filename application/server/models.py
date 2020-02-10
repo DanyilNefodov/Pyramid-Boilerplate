@@ -61,7 +61,7 @@ class Banner(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(Text, nullable=False)
-    image_path = Column(Text, unique=True, nullable=True)
+    image_path = Column(Text, nullable=True)
     url = Column(Text, nullable=False)
     visible = Column(Boolean, default=True)
     position = Column(Integer, nullable=True)
