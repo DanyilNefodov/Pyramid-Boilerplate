@@ -40,7 +40,6 @@ class Views(object):
             user = DBSession.query(User).filter(
                 User.name == self.request.unauthenticated_userid).first()
 
-            print("\n\n\n", self.request.unauthenticated_userid, "\n\n\n")
         except Exception as e:
             log.debug(e)
             raise HTTPInternalServerError()

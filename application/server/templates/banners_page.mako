@@ -16,14 +16,25 @@
       <div class="container">
             <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
                 <div id="filters" class="filters">
-                    % if user is None:
-                    <a href="${request.route_url('login_view')}">Log In</a>
-                    % else:
-                    <a href="${request.route_url('logout_view')}">Logout</a>
-                    % endif
-                    % if user and "group:admin" in user.groups():
-                    <a href="${request.route_url('admin_view')}">Admin page</a>
-                    % endif   
+                    <a>
+                        % if user is None:
+                            <form method="post" action="${request.route_url('login_view')}">
+                                <input type="submit" value="Log In">
+                            </form>
+                        % else:
+                            <form method="post" action="${request.route_url('logout_view')}">
+                                <input type="submit" value="Log Out">
+                            </form>
+                        % endif
+                    </a>
+
+                    <a>
+                        % if user and "group:admin" in user.groups():
+                            <form method="post" action="${request.route_url('admin_view')}">
+                                <input type="submit" value="Admin page">
+                            </form>
+                        % endif
+                    </a>
                 </div>
             </div>
         </div>

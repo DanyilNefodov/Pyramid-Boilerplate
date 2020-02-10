@@ -9,13 +9,24 @@
         <div class="container">  <link href="" rel="stylesheet">
             <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
                 <div id="filters" class="filters">
-                    <a href="${request.route_url('add_banner_view')}" data-filter="*">Add new banner</a>
+                    <a>
+                        <form id="csrf_input" method="post" action="${request.route_url('add_banner_view')}">
+                            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                            <input type="submit" value="Inc">
+                        </form>
+                    </a>
 
-                    % if view.request.environ.get("HTTP_COOKIE") is None:
-                    <a href="${request.application_url}/login">Log In</a>
-                    % else:
-                    <a href="${request.application_url}/logout">Logout</a>
-                    % endif
+                    <a>
+                        % if user is None:
+                            <form method="post" action="${request.route_url('login_view')}">
+                                <input type="submit" value="Log In">
+                            </form>
+                        % else:
+                            <form method="post" action="${request.route_url('logout_view')}">
+                                <input type="submit" value="Log Out">
+                            </form>
+                        % endif
+                    </a>
                 </div>
             </div>
             </div>
@@ -48,12 +59,47 @@
                     <td>${banner.visible}</td>
                     <td>${banner.created_at}</td>
                     <td>${banner.updated_at}</td>
-                    <td><a href="${request.route_url('increase_banner_position_view', id=banner.id)}">Inc</a></td>
-                    <td><a href="${request.route_url('decrease_banner_position_view', id=banner.id)}">Dec</a></td>
-                    <td><a href="${request.route_url('update_banner_view', id=banner.id)}">Edit</a></td>
-                    <td><a href="${request.route_url('delete_banner_view', id=banner.id)}">Del</a></td>
+                    <td>
+                        <form id="csrf_input" method="post" action="${request.route_url('increase_banner_position_view', id=banner.id)}">
+                            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                            <input type="submit" value="Inc">
+                        </form>
+                    </td>
+                    <td>
+                        <form id="csrf_input" method="post" action="${request.route_url('decrease_banner_position_view', id=banner.id)}">
+                            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                            <input type="submit" value="Inc">
+                        </form>
+                    </td>
+                    <td>
+                        <form id="csrf_input" method="post" action="${request.route_url('update_banner_view', id=banner.id)}">
+                            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                            <input type="submit" value="Inc">
+                        </form>
+                    </td>
+                    <td>
+                        <form id="csrf_input" method="post" action="${request.route_url('delete_banner_view', id=banner.id)}">
+                            <input type="hidden" name="csrf_token" value="${get_csrf_token()}">
+                            <input type="submit" value="Inc">
+                        </form>
+                    </td>
                 </tr>
             % endfor
         </tbody>
     </table>
+</%block>
+
+<%block name="js">
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#csrf_input').on('click', function(){
+                var csrfToken = "${get_csrf_token()}";
+                $.ajax({
+                    type: "POST",
+                    url: $(this).attr('action'),
+                    headers: { 'X-CSRF-Token': csrfToken }
+                }));
+            })
+        })
+    </script>
 </%block>

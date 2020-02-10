@@ -1,6 +1,8 @@
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
+from pyramid.csrf import LegacySessionCSRFStoragePolicy
+from pyramid.session import UnencryptedCookieSessionFactoryConfig
 
 from sqlalchemy import engine_from_config
 
@@ -15,11 +17,17 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
+    my_session_factory = UnencryptedCookieSessionFactoryConfig('itsaseekreet')
+
     config = Configurator(settings=settings,
+                          session_factory=my_session_factory,
                           root_factory='server.resources.Root')
 
     config.include('pyramid_mako')
     config.include('pyramid_tm')
+
+    csrf_policy = LegacySessionCSRFStoragePolicy()
+    config.set_csrf_storage_policy(csrf_policy)
 
     authn_policy = AuthTktAuthenticationPolicy(
         settings['server.secret'], callback=groupfinder,

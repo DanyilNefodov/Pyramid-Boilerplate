@@ -6,16 +6,14 @@ from sqlalchemy import engine_from_config
 
 from pyramid.paster import (
     get_appsettings,
-    setup_logging,
-    )
+    setup_logging)
 
 from server.models import (
     DBSession,
     Base,
     Group,
     User,
-    UserInGroup,
-    )
+    UserInGroup)
 from server.password_utils import hash_password
 
 

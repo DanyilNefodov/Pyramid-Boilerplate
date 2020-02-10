@@ -3,15 +3,19 @@ import deform.widget
 import mimetypes
 import os
 
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPInternalServerError
+from pyramid.csrf import check_csrf_token
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPNotFound,
+    HTTPInternalServerError,
+    HTTPBadRequest)
 from pyramid.view import view_config
 
 from server.banner_views import log
 from server.schemas import BannerSchema
 from server.models import (
     Banner,
-    DBSession
-)
+    DBSession)
 from server.utils import crop_image
 
 
@@ -44,6 +48,9 @@ class Views(object):
                  renderer='templates/banner_edit.mako',
                  permission='admin')
     def add_banner_view(self):
+        if not check_csrf_token(self.request):
+            raise HTTPBadRequest
+
         form = self.banner_form.render()
 
         if 'submit' in self.request.params:
@@ -101,6 +108,9 @@ class Views(object):
 
     @view_config(route_name='delete_banner_view')
     def delete_banner_view(self):
+        if not check_csrf_token(self.request):
+            raise HTTPBadRequest
+
         bid = int(self.request.matchdict['id'])
 
         try:
@@ -125,6 +135,9 @@ class Views(object):
                  renderer='templates/banner_edit.mako',
                  permission='admin')
     def update_banner_view(self):
+        if not check_csrf_token(self.request):
+            raise HTTPBadRequest
+
         bid = int(self.request.matchdict['id'])
 
         try:
@@ -210,6 +223,9 @@ class Views(object):
     @view_config(route_name='increase_banner_position_view',
                  permission='admin')
     def increase_banner_position_view(self):
+        if not check_csrf_token(self.request):
+            raise HTTPBadRequest
+
         bid = int(self.request.matchdict['id'])
 
         try:
@@ -252,6 +268,9 @@ class Views(object):
     @view_config(route_name='decrease_banner_position_view',
                  permission='admin')
     def decrease_banner_position_view(self):
+        if not check_csrf_token(self.request):
+            raise HTTPBadRequest
+
         bid = int(self.request.matchdict['id'])
 
         try:
