@@ -91,7 +91,7 @@
             % endfor
         </tbody>
     </table>
-    % if page.get("count", 0) not in (0, 1):
+    % if page.get("count", 0) != 0:
     <div class="container">  <link href="" rel="stylesheet">
         <div class="col-md-12 col-lg-6 text-left text-lg-right" data-aos="fade-up" data-aos-delay="100">
             <% page_count = page.get("count", 0) %>
@@ -101,18 +101,13 @@
                         <input type="submit" value="1">
                     </form>
                 </a>
-                % for paginator in range(2, page_count):
+                % for paginator in range(2, page_count + 1):
                     <a>
                         <form method="post" action="${request.route_url('admin_paginated_view', id=paginator)}">
                             <input type="submit" value="${paginator}">
                         </form>
                     </a>
                 % endfor
-                <a>
-                    <form method="post" action="${request.route_url('admin_paginated_view', id=page_count)}">
-                        <input type="submit" value="${page_count}">
-                    </form>
-                </a>
             </div>
         </div>
     </div>

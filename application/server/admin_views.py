@@ -24,11 +24,11 @@ from server.utils import crop_image
 class Views(object):
     def __init__(self, request):
         self.request = request
-        self.PAGINATION_LIMIT = 15
+        self.PAGINATION_LIMIT = 2
 
     @property
     def banner_form(self):
-        schema = BannerSchema()
+        schema = BannerSchema().bind(request=self.request)
         registry = deform.widget.ResourceRegistry(self.request)
 
         return deform.Form(schema,
@@ -37,7 +37,7 @@ class Views(object):
 
     @property
     def banner_search_form(self):
-        schema = BannerSearchSchema()
+        schema = BannerSearchSchema().bind(request=self.request)
         registry = deform.widget.ResourceRegistry(self.request)
 
         return deform.Form(schema,
@@ -49,45 +49,48 @@ class Views(object):
     def admin_view(self):
         form = self.banner_search_form.render()
 
-        # try:
-        banners = DBSession.query(Banner).order_by(Banner.position, Banner.id)
+        try:
+            banners = DBSession.query(Banner).order_by(Banner.position, Banner.id)
 
-        if 'search' in self.request.params:
-            controls = self.request.POST.items()
+            if 'search' in self.request.params:
+                controls = self.request.POST.items()
 
-            try:
-                appstruct = self.banner_search_form.validate(controls)
+                try:
+                    appstruct = self.banner_search_form.validate(controls)
 
-                search_title = appstruct.get("title", "default")
-                search_url = appstruct.get("url", "default")
-                search_visible = appstruct.get("visible", 0)
+                    search_title = appstruct.get("title", "default")
+                    search_url = appstruct.get("url", "default")
+                    search_visible = appstruct.get("visible", 0)
 
-                banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
+                    banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
 
-                if search_visible != 0:
-                    if search_visible == 1:
-                        visible = True
-                    if search_visible == 2:
-                        visible = False
+                    if search_visible != 0:
+                        if search_visible == 1:
+                            visible = True
+                        if search_visible == 2:
+                            visible = False
 
-                    banners = banners.filter(Banner.visible == visible)
+                        banners = banners.filter(Banner.visible == visible)
 
-                form = self.banner_search_form.render({
-                    "title": search_title,
-                    "url": search_url,
-                    "visible": search_visible
-                })
+                    form = self.banner_search_form.render({
+                        "title": search_title,
+                        "url": search_url,
+                        "visible": search_visible
+                    })
 
-            except deform.ValidationFailure as e:
-                form = e.render()
+                except deform.ValidationFailure as e:
+                    form = e.render()
+
+        except Exception as e:
+            log.debug(e)
+            raise HTTPInternalServerError()
 
         banners_count = banners.count()
 
         count = banners_count // self.PAGINATION_LIMIT
 
-        # except Exception as e:
-        #     log.debug(e)
-        #     raise HTTPInternalServerError()
+        if banners_count % self.PAGINATION_LIMIT != 0:
+            count += 1
 
         return dict(form=form, banners=banners.limit(self.PAGINATION_LIMIT), page=dict(count=count, page=1))
 
@@ -99,24 +102,55 @@ class Views(object):
         if page is None:
             raise HTTPNotFound
 
+        form = self.banner_search_form.render()
+
+        banners = DBSession.query(Banner).order_by(
+            Banner.position, Banner.id)
+
         try:
-            pagination_offset = self.PAGINATION_LIMIT * (page - 1)
+            if 'search' in self.request.params:
+                controls = self.request.POST.items()
 
-            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(
-                Banner.position, Banner.id)
+                try:
+                    appstruct = self.banner_search_form.validate(controls)
 
-            banners_count = banners.count()
+                    search_title = appstruct.get("title", "default")
+                    search_url = appstruct.get("url", "default")
+                    search_visible = appstruct.get("visible", 0)
 
-            count = banners_count // self.PAGINATION_LIMIT
+                    banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
 
-            if banners_count % self.PAGINATION_LIMIT != 0:
-                count += 1
+                    if search_visible != 0:
+                        if search_visible == 1:
+                            visible = True
+                        if search_visible == 2:
+                            visible = False
+
+                        banners = banners.filter(Banner.visible == visible)
+
+                    form = self.banner_search_form.render({
+                        "title": search_title,
+                        "url": search_url,
+                        "visible": search_visible
+                    })
+
+                except deform.ValidationFailure as e:
+                    form = e.render()
 
         except Exception as e:
             log.debug(e)
             raise HTTPInternalServerError()
 
-        return dict(banners=banners.offset(pagination_offset).limit(self.PAGINATION_LIMIT), page=dict(count=count, page=page))
+        pagination_offset = self.PAGINATION_LIMIT * (page - 1)
+
+        banners_count = banners.count()
+
+        count = banners_count // self.PAGINATION_LIMIT
+
+        if banners_count % self.PAGINATION_LIMIT != 0:
+            count += 1
+
+        return dict(form=form, banners=banners.offset(pagination_offset).limit(self.PAGINATION_LIMIT), page=dict(count=count, page=page))
 
     @view_config(route_name='add_banner_view',
                  renderer='templates/banner_edit.mako',
