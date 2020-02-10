@@ -26,6 +26,11 @@ class MemoryTmpStore(dict):
 tmpstore = MemoryTmpStore()
 
 
+search_visible_choices = ((0, "- Select -"),
+            (1, "True"),
+            (2, "False"))
+
+
 def url_validator(node, value: str):
     if not validators.url(value):
         raise Invalid(node,
@@ -55,6 +60,18 @@ class BannerSchema(colander.MappingSchema):
             widget=deform.widget.CheckboxWidget(),
             default=True
             )
+
+
+class BannerSearchSchema(colander.MappingSchema):
+    title = colander.SchemaNode(colander.String(),
+                                required=False,
+                                missing="")
+    url = colander.SchemaNode(colander.String(),
+                              required=False,
+                              missing="")
+    visible = colander.SchemaNode(
+            colander.Integer(),
+            widget=deform.widget.SelectWidget(values=search_visible_choices))
 
 
 def name_validator(node, value: str):

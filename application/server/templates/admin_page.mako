@@ -31,6 +31,7 @@
             </div>
         </div>
     </div>
+    ${form | n}
     <table class="table">
         <thead class="thead-dark">
             <tr>

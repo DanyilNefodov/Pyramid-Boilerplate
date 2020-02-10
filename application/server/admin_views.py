@@ -12,7 +12,9 @@ from pyramid.httpexceptions import (
 from pyramid.view import view_config
 
 from server.banner_views import log
-from server.schemas import BannerSchema
+from server.schemas import (
+    BannerSchema,
+    BannerSearchSchema)
 from server.models import (
     Banner,
     DBSession)
@@ -33,24 +35,61 @@ class Views(object):
                            buttons=('submit',),
                            resource_registry=registry)
 
+    @property
+    def banner_search_form(self):
+        schema = BannerSearchSchema()
+        registry = deform.widget.ResourceRegistry(self.request)
+
+        return deform.Form(schema,
+                           buttons=('search',),
+                           resource_registry=registry)
+
     @view_config(route_name='admin_view',
                  renderer='templates/admin_page.mako')
     def admin_view(self):
-        try:
-            banners = DBSession.query(Banner).filter(Banner.visible == True).order_by(Banner.position, Banner.id)
+        form = self.banner_search_form.render()
 
-            banners_count = banners.count()
+        # try:
+        banners = DBSession.query(Banner).order_by(Banner.position, Banner.id)
 
-            count = banners_count // self.PAGINATION_LIMIT
+        if 'search' in self.request.params:
+            controls = self.request.POST.items()
 
-            if banners_count % self.PAGINATION_LIMIT != 0:
-                count += 1
+            try:
+                appstruct = self.banner_search_form.validate(controls)
 
-        except Exception as e:
-            log.debug(e)
-            raise HTTPInternalServerError()
+                search_title = appstruct.get("title", "default")
+                search_url = appstruct.get("url", "default")
+                search_visible = appstruct.get("visible", 0)
 
-        return dict(banners=banners.limit(self.PAGINATION_LIMIT), page=dict(count=count, page=1))
+                banners = banners.filter(Banner.title.like(f"{search_title}%"), Banner.url.like(f"{search_url}%"))
+
+                if search_visible != 0:
+                    if search_visible == 1:
+                        visible = True
+                    if search_visible == 2:
+                        visible = False
+
+                    banners = banners.filter(Banner.visible == visible)
+
+                form = self.banner_search_form.render({
+                    "title": search_title,
+                    "url": search_url,
+                    "visible": search_visible
+                })
+
+            except deform.ValidationFailure as e:
+                form = e.render()
+
+        banners_count = banners.count()
+
+        count = banners_count // self.PAGINATION_LIMIT
+
+        # except Exception as e:
+        #     log.debug(e)
+        #     raise HTTPInternalServerError()
+
+        return dict(form=form, banners=banners.limit(self.PAGINATION_LIMIT), page=dict(count=count, page=1))
 
     @view_config(route_name='admin_paginated_view',
                  renderer='templates/admin_page.mako')
