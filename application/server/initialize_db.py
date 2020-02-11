@@ -61,7 +61,7 @@ def main(argv=sys.argv):
         )
         DBSession.add(user_in_group)
 
-        # for bid in range(101):
+        # for bid in range(100000):
         #     banner_id = bid + 1
 
         #     banner = Banner(

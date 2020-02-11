@@ -26,7 +26,7 @@ from server.utils import (
 class Views(object):
     def __init__(self, request):
         self.request = request
-        self.PAGINATION_LIMIT = 2
+        self.PAGINATION_LIMIT = 15
 
     @property
     def banner_form(self):
@@ -46,15 +46,51 @@ class Views(object):
                            buttons=('search',),
                            resource_registry=registry)
 
+    @view_config(route_name='sort_admin_view')
+    def sort_admin_view(self):
+        new_column = self.request.matchdict['column']
+
+        try:
+            column = self.request.session["search_request"]["column"]
+
+            if new_column == column:
+                sort = self.request.session["search_request"]["sort"]
+
+                if sort == "asc":
+                    self.request.session["search_request"]["sort"] = "desc"
+                else:
+                    self.request.session["search_request"]["sort"] = "asc"
+            else:
+                self.request.session["search_request"]["column"] = new_column
+                self.request.session["search_request"]["sort"] = "asc"
+
+        except KeyError:
+            self.request.session["search_request"]["column"] = "position"
+            self.request.session["search_request"]["sort"] = "asc"
+
+        url = self.request.route_url('admin_view')
+        return HTTPFound(location=url)
+
     @view_config(route_name='admin_view',
                  renderer='templates/admin_page.mako')
     def admin_view(self):
         form = self.banner_search_form.render()
 
-        try:
-            search_request = self.request.session["search_request"]
-        except KeyError:
-            search_request = self.request.session["search_request"] = {}
+        # try:
+        search_request = self.request.session["search_request"]
+        sort = self.request.session["search_request"]["sort"]
+        column = self.request.session["search_request"]["column"]
+
+        # except KeyError:
+        #     sort = "asc"
+        #     column = "position"
+
+        search_request = self.request.session["search_request"] = {
+            "sort": sort,
+            "column": column
+        }
+
+        print("\n\n\n", search_request, "\n\n\n")
 
         form = self.banner_search_form.render(search_request)
 
@@ -72,6 +108,8 @@ class Views(object):
                     search_visible = appstruct.get("visible", 0)
 
                     search_request = self.request.session["search_request"] = {
+                        "sort": sort,
+                        "column": column,
                         "title": search_title,
                         "url": search_url,
                         "visible": search_visible
@@ -105,10 +143,16 @@ class Views(object):
         if page is None:
             raise HTTPNotFound
 
+        sort = self.request.headers.get("sort", "asc")
+        column = self.request.headers.get("columnName", "position")
+
         try:
             search_request = self.request.session["search_request"]
         except KeyError:
-            search_request = self.request.session["search_request"] = {}
+            search_request = self.request.session["search_request"] = {
+                "sort": sort,
+                "column": column
+            }
 
         form = self.banner_search_form.render(search_request)
 
@@ -126,6 +170,8 @@ class Views(object):
                     search_visible = appstruct.get("visible", 0)
 
                     search_request = self.request.session["search_request"] = {
+                        "sort": sort,
+                        "column": column,
                         "title": search_title,
                         "url": search_url,
                         "visible": search_visible

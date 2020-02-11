@@ -1,5 +1,6 @@
 def admin_include(config):
     config.add_route('admin_view', '/admin')
+    config.add_route('sort_admin_view', '/admin/sort/{column}')
     config.add_route('admin_paginated_view', '/admin:page?={id}')
     config.add_route('add_banner_view', '/banner/new')
     config.add_route('delete_banner_view', '/banner/{id}/delete')

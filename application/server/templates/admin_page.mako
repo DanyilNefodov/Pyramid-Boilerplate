@@ -37,21 +37,23 @@
         </div>
     </div>
     ${form | n}
-    <table class="table">
+    <input type='hidden' id='sort' render-url="${request.application_url}">
+    <table id='empTable' class="table">
         <thead class="thead-dark">
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Title</th>
-                <th scope="col">Image</th>
-                <th scope="col">Url</th>
-                <th scope="col">Visible</th>
-                <th scope="col">Created at</th>
-                <th scope="col">Updated at</th>
-                <th scope="col">Inc</th>
-                <th scope="col">Dec</th>
-                <th scope="col">Edit</th>
-                <th scope="col">Del</th>
-            </tr>
+                <tr>
+                    <th scope="col"><span onclick='sortTable("position");'>#</span></th>
+                    <th scope="col"><span onclick='sortTable("title");'>Title</span></th>
+                    <th scope="col">Image</th>
+                    <th scope="col"><span onclick='sortTable("url");'>Url</span></th>
+                    <th scope="col"><span onclick='sortTable("visible");'>Visible</span></th>
+                    <th scope="col"><span onclick='sortTable("created_at");'>Created at</span></th>
+                    <th scope="col"><span onclick='sortTable("updated_at");'>Updated at</span></th>
+                    <th scope="col">Inc</th>
+                    <th scope="col">Dec</th>
+                    <th scope="col">Upd</th>
+                    <th scope="col">Del</th>
+                </tr>
+            <input>
         </thead>
         <tbody>
             % for banner in banners:
@@ -101,13 +103,53 @@
                         <input type="submit" value="1">
                     </form>
                 </a>
-                % for paginator in range(2, page_count + 1):
+                % if page_count > 7:
+                    <% 
+                        page_number = page.get("page", 7)
+
+                        page_lower = page_number - 1
+                        page_upper = page_number + 2
+
+                        if page_lower <= 1:
+                            page_lower = 2
+
+                        if page_upper > page_count:
+                            page_upper = page_count
+                    %>
+                    % if page_lower != 2:
+                        <a>
+                            ...
+                        </a>
+                    % endif
+                    % for paginator in range(page_lower, page_upper):
+                        <a>
+                            <form method="post" action="${request.route_url('admin_paginated_view', id=paginator)}">
+                                <input type="submit" value="${paginator}">
+                            </form>
+                        </a>
+                    % endfor
+                    % if page_upper < page_count:
                     <a>
-                        <form method="post" action="${request.route_url('admin_paginated_view', id=paginator)}">
-                            <input type="submit" value="${paginator}">
-                        </form>
+                        ...
                     </a>
-                % endfor
+                    % endif
+                % else:
+                    % for paginator in range(2, page_count):
+                        <a>
+                            <form method="post" action="${request.route_url('admin_paginated_view', id=paginator)}">
+                                <input type="submit" value="${paginator}">
+                            </form>
+                        </a>
+                    % endfor
+                % endif
+                <a>
+                    <form method="post" action="${request.route_url('admin_paginated_view', id=page_count)}">
+                        <input type="submit" value="${page_count}">
+                    </form>
+                    ## <form method="post" action="${request.route_url('admin_paginated_view', id=page_count}">
+                    ##     <input type="submit" value="${page_count}">
+                    ## </form>
+                </a>
             </div>
         </div>
     </div>
@@ -126,5 +168,14 @@
                 }));
             })
         })
+    </script>
+    <script>
+    function sortTable(columnName){
+        var sort = $("#sort").val();
+        $.ajax({
+                url: $("#sort").attr("render-url") + "/admin/sort/" + columnName,
+                type:'POST'
+            });
+        }
     </script>
 </%block>
