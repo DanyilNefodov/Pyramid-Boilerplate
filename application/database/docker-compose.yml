@@ -1,0 +1,13 @@
+version: "3.3"
+
+services:
+  database:
+    container_name: postgres
+    image: postgres:latest
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: banners_database
+      POSTGRES_USER: banners
+      POSTGRES_PASSWORD: banners
